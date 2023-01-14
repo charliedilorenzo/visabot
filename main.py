@@ -6,36 +6,15 @@ import json
 import os
 from keep_alive import keep_alive
 
-# DO NOT:
-# change the name of the bot
-# let anyone have the same name as the bot
-
-# THINGS DONE MANUALLY
-# Does not make the visa role
-# Does not moniter perms of visa role
-# THE BOT WILL NOT SAY WHEN IT GOES OFFLINE MOST OF THE TIME
-
-# PERSONAL TEST CASES: ✓ / ✕
-# ✓ user joins then bot joins
-# ✓ bot joins then user joins
-# ✓ bot joins then user joins then bot leaves and rejoins before visa
-# ✓ user joins then bot joins and leaves then bot rejoins before visa
-# ✓ bot joins then user joins then bot leaves and rejoins after visa
-# ? user joins then bot joins and leaves then bot rejoins after visa
-
-
 def get_now():
   return datetime.datetime.now((datetime.timezone.utc))
-
 
 def str_datetime_to_datetime_obj(str_datetime: str) -> datetime.datetime:
   datetime_obj = datetime.datetime.strptime(str_datetime,
                                             "%Y-%m-%d %H:%M:%S.%f%z")
   return datetime_obj
 
-
 class MyClient(discord.Client):
-
   async def get_guild(self) -> discord.Guild:
     guild = await client.fetch_guild(self.guild_id)
     return guild
@@ -68,13 +47,7 @@ class MyClient(discord.Client):
 
   def update_var_json(self, new_data: dict) -> bool:
     data = self.get_json_data()
-    if not (new_data.get('ASSIGNED') is None):
-      new_data['ASSIGNED'] = list(
-        set(data['ASSIGNED']) | set(new_data['ASSIGNED']))
-    else:
-      new_data['ASSIGNED'] = data['ASSIGNED']
     data.update(new_data)
-
     with open(self.tracker_file, "w") as outfile:
       json.dump(data, outfile)
 
@@ -89,13 +62,18 @@ class MyClient(discord.Client):
     last_around = str_datetime_to_datetime_obj(self.timestamp_before_online)
     return last_around
 
-  def __init__(self, data, *args, **kwargs):
+  def __init__(self, data: dict, test_mode: bool, *args, **kwargs):
     super().__init__(*args, **kwargs)
     # just manually set timeframe here
     days = 7
     hours = 0
     minutes = 0
     seconds = 0
+    if test_mode:
+      days = 0
+      hours = 0
+      minutes = 5
+      seconds = 0
     self.visa_length_static = [days, hours, minutes, seconds]
     self.purge_gif = 'get_deleted_pleb.gif'
     self.guild_id = data['GUILD_ID']
@@ -104,10 +82,8 @@ class MyClient(discord.Client):
     self.dev_user_id = data['DEV_ID']
 
     self.tracker_file = "var_tracker.json"
-    if test_mode():
+    if test_mode:
         self.tracker_file = "test_" + self.tracker_file
-    else:
-        self.tracker_file = "var_tracker.json"
     
     if not os.path.exists(self.tracker_file):
       now = get_now()
@@ -133,7 +109,7 @@ class MyClient(discord.Client):
   
   async def report_error(self):
     dev = await self.get_dev_member()
-    dev_at = await self.get_at(dev)
+    dev_at = self.get_at(dev)
     await self.send_to_spam(
       'Visabot has error - {} get on and fix it you dummy'.format(dev_at))
   
@@ -179,7 +155,7 @@ class MyClient(discord.Client):
         kick_list.append(member)
 
     for member in kick_list:
-      if self.time_left_value(member) =< 0:
+      if self.time_left_value(member) <= 0:
         name = self.get_at(member)
         try:
           await guild.kick(member)
@@ -218,7 +194,7 @@ class MyClient(discord.Client):
     visarole = await self.get_visa_role()
     success = True
     for member in joined_during_offline_members:
-      if not (await self.has_visa(member)():
+      if not (await self.has_visa(member)):
         name = self.get_at(member)
         await member.add_roles(visarole)
         warning_message = ("{} has been given a visa. \n You have {}.").format(
@@ -235,14 +211,9 @@ class MyClient(discord.Client):
   async def on_ready(self):
     print(f'We have logged in as {client.user}')
     now = get_now()
-    basic_activity = discord.Activity(created_at=now,
-                                      name="you",
-                                      start=now,
-                                      type=discord.ActivityType.watching,
-                                      status=discord.Status.online)
+    basic_activity = discord.Activity(created_at=now,name="you",start=now,type=discord.ActivityType.watching,status=discord.Status.online)
     await client.change_presence(activity=basic_activity)
-
-    
+     
     success = await self.add_visa_after_offline()
     if success:
       pass
@@ -259,12 +230,16 @@ class MyClient(discord.Client):
       await self.report_error()
 
   async def on_message(self, message):
+    guild = await self.get_guild()
+    # wrong guild
+    if message.guild != guild:
+      return
     cleaned = message.clean_content
     guild = await self.get_guild()
     visabot = await guild.fetch_member(self.bot_id)
     if message.author == client.user:
       return
-    elif (await self.get_at(visabot)) in message.content:
+    elif ( self.get_at(visabot)) in message.content:
       await message.channel.send('oh no im a little baby')
     elif cleaned.startswith("!visa"):
       # only works for one @
@@ -274,7 +249,7 @@ class MyClient(discord.Client):
         end = message.content.index(">")
         id = int(message.content[start:end])
         member = await guild.fetch_member(id)
-        if not (await self.has_visa(member)():
+        if not (await self.has_visa(member)):
           await message.channel.send(
             '{} is considered a permanent member of the server.'.format(
               self.get_nick_or_name(member)))
@@ -298,6 +273,10 @@ class MyClient(discord.Client):
     visarole = await self.get_visa_role()
     await member.add_roles(visarole)
     now = get_now()
+    name = self.get_at(member)
+    warning_message = ("{} has been given a visa. \n You have {}.").format(
+          name, self.time_left_message(member))
+    await self.send_to_spam(warning_message)
     self.update_var_json({'LAST_TIME_OF_ACTION': str(now)})
 
   async def setup_hook(self) -> None:
@@ -340,30 +319,29 @@ class MyClient(discord.Client):
   async def on_shared_resumed(self):
     await self.send_to_spam('Visabot Online')
 
-test_mode = False
+test_mode = True
 
 config_file = 'config.json'
 if test_mode:
   config_file = "test_" + config_file
 
-
-with open('config.json', 'r') as f:
+with open(config_file, 'r') as f:
   data = json.load(f)
   print(data)
   BOT_TOKEN = data['TOKEN']
 
 intents = discord.Intents.all()
+#theoretically redundant but just in case
 intents.message_content = True
 intents.members = True
 intents.presences = True
 intents.guilds = True
 
-test_mode = False
-
 # intents.
 client = MyClient(data, test_mode, intents=intents)
 
-keep_alive()
+if not test_mode:
+  keep_alive()
 try:
   client.run(BOT_TOKEN)
 except:

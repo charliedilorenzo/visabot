@@ -3,3 +3,8 @@ restarter.py
 config.json
 test_config.json
 var_tracker.json
+test_var_tracker.json
+*.pyc
+/__pycache__/*
+/bot-env/*
+.env

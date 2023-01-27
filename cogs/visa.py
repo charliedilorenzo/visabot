@@ -63,6 +63,7 @@ async def get_all_visarole_members(guild: discord.Guild):
 
 # Here we name the cog and create a new class for the cog.
 class Visabot(commands.Cog, name="visabot"):
+    # TODO add some base class called "GuildedCog" or something with all the config and get options
     def update_var_json(self, new_data: dict) -> bool:
         data = self.get_json_data()
         data.update(new_data)
@@ -76,6 +77,7 @@ class Visabot(commands.Cog, name="visabot"):
         return data
 
     def __init__(self, bot: Bot):
+        # super().__init__(bot)
         self.bot = bot
         days = 7
         hours = 0

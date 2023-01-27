@@ -1,458 +1,39 @@
-import discord
-import datetime
-import math
-from discord.ext import tasks, commands
+"""
+Copyright © Krypton 2019-2023 - https://github.com/kkrypt0nn (https://krypton.ninja)
+Description:
+🐍 A simple template to start to code your own and personalized discord bot in Python programming language.
+
+Version: 5.5.0
+"""
+
+import asyncio
 import json
+import logging
 import os
-from keep_alive import keep_alive
+import platform
 import random
+import sys
 
+import aiosqlite
+import discord
+from discord.ext import commands, tasks
+from discord.ext.commands import Bot, Context
 
-def get_now():
-  return datetime.datetime.now((datetime.timezone.utc))
+import exceptions
 
+test_mode = True
 
-def str_datetime_to_datetime_obj(str_datetime: str) -> datetime.datetime:
-  datetime_obj = datetime.datetime.strptime(str_datetime,
-                                            "%Y-%m-%d %H:%M:%S.%f%z")
-  return datetime_obj
-
-
-class MyClient(discord.Client):
-
-  async def get_guild(self) -> discord.Guild:
-    guild = await client.fetch_guild(self.guild_id)
-    return guild
-
-  async def get_visa_role(self) -> discord.Role:
-    guild = await self.get_guild()
-    visarole = discord.utils.get(guild.roles, name="Visa")
-    return visarole
-
-  async def get_admin_spam_channel(self) -> discord.TextChannel:
-    guild = await self.get_guild()
-    spam_channel = await guild.fetch_channel(self.spam_channel)
-    return spam_channel
-
-  def get_nick_or_name(self, member: discord.Member) -> str:
-    nickname = member.nick
-    if not nickname is None:
-      return nickname
-    else:
-      return member.name
-
-  def get_at(self, member: discord.Member) -> str:
-    at_member = "<@" + str(member.id) + ">"
-    return at_member
-
-  def get_json_data(self) -> dict:
-    with open(self.tracker_file, 'r') as openfile:
-      data = json.load(openfile)
-    return data
-
-  def update_var_json(self, new_data: dict) -> bool:
-    data = self.get_json_data()
-    data.update(new_data)
-    with open(self.tracker_file, "w") as outfile:
-      json.dump(data, outfile)
-
-    return True
-
-  async def get_dev_member(self) -> discord.Member:
-    guild = await self.get_guild()
-    dev_member = await guild.fetch_member(self.dev_user_id)
-    return dev_member
-
-  def get_last_around(self) -> datetime.datetime:
-    last_around = str_datetime_to_datetime_obj(self.timestamp_before_online)
-    return last_around
-
-  async def get_all_visarole_members(self):
-    visarole_members = []
-    guild = await self.get_guild()
-    async for member in guild.fetch_members(limit=None):
-      if await self.has_visa(member):
-        visarole_members.append(member)
-    return visarole_members
-
-  def __init__(self, data: dict, test_mode: bool, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-    # just manually set timeframe here
-    days = 7
-    hours = 0
-    minutes = 0
-    seconds = 0
+if not os.path.isfile(f"{os.path.realpath(os.path.dirname(__file__))}/config.json"):
+    sys.exit("'config.json' not found! Please add it and try again.")
+else:
+    config_path = f"{os.path.realpath(os.path.dirname(__file__))}"
     if test_mode:
-      days = 0
-      hours = 0
-      minutes = 1
-      seconds = 0
-    self.warning_gif = "visabot_is_watching_you.gif"
-    self.visa_length_static = [days, hours, minutes, seconds]
-    self.guild_id = data['GUILD_ID']
-    self.spam_channel = data['SPAM_CHANNEL']
-    self.bot_id = data['BOT_ID']
-    self.dev_user_id = data['DEV_ID']
-    self.bot_status_channel = data['BOT_STATUS_CHANNEL']
-    #for while on replit
-    if test_mode == True
-      self.main_dir = os.getcwd()
-    #for while on replit
+        config_path +="/test_config.json"
     else:
-      self.main_dir = "/home/runner/visabot"
-
-    self.tracker_file = "var_tracker.json"
-    if test_mode:
-      self.tracker_file = "test_" + self.tracker_file
-
-    # this should never run but just in case
-    if not os.path.exists(self.tracker_file):
-      now = get_now()
-      init_data = {'LAST_TIME_OF_ACTION': str(now), 'ASSIGNED': []}
-      with open(self.tracker_file, 'w') as openfile:
-        json.dump(init_data, openfile)
-    data = self.get_json_data()
-    self.timestamp_before_online = data['LAST_TIME_OF_ACTION']
-    # just in case to avoid infinite loops
-    self.error_counter = 0
-
-  async def send_to_spam(self, message):
-    spam_channel = await self.get_admin_spam_channel()
-    await spam_channel.send(message)
-
-  def time_left_value_seconds(self, member: discord.Member) -> int:
-    now = get_now()
-    joined = member.joined_at
-    seconds_diff = (now - joined).total_seconds()
-
-    # currently this is just hard coded
-    days = self.visa_length_static[0]
-    hours = self.visa_length_static[1]
-    minutes = self.visa_length_static[2]
-    seconds = self.visa_length_static[3]
-
-    visa_length = 60 * 60 * 24 * days + 60 * 60 * hours + 60 * minutes + seconds
-
-    if seconds_diff > visa_length:
-      return 0
-    else:
-      return visa_length - int(seconds_diff)
-
-  def time_left_message(self, member: discord.Member) -> str:
-    time = self.time_left_value_seconds(member)
-    # seconds = time % 60
-    time = math.floor(time / 60)
-    minutes = time % 60
-    time = math.floor(time / 60)
-    hours = time % 24
-    time = math.floor(time / 24)
-    days = time
-    return (
-      ' ~{} Days, {} Hours, and {} Minutes remaining on your visa. \n You have to reach out if you don\'t want it to expire, otherwise you will be **kicked** from the server.'
-    ).format(days, hours, minutes)
-
-  def get_random_delete_gif(self) -> str:
-    purge_directory = self.main_dir + "/purge_gifs"
-    delete_gifs = []
-    for file in os.listdir(purge_directory):
-      if file.endswith(".gif"):
-        delete_gifs.append(purge_directory + "/" + file)
-    random_gif = random.choice(delete_gifs)
-    return random_gif
-
-  async def attempt_kick_visarole_member(self, member) -> bool:
-    # returns [success, was_kicked]
-    guild = await self.get_guild()
-    name = self.get_at(member)
-    visarole = await self.get_visa_role()
-    # attempt to kick
-    try:
-      await guild.kick(member)
-      refetch_member = await guild.fetch_member(member.id)
-    # here is a success since we cannot find the member they have been properly kicked from the server
-    except discord.NotFound:
-      await self.send_to_spam(
-        '{}\'s visa has expired. They have been kicked.'.format(name))
-      return [True, True]
-    # visabot attempted to kick someone with higher perms, that is probably not an error in visabot
-    except discord.Forbidden:
-      await self.send_to_spam(
-        "{} has a higher role and does not need a visa.".format(name))
-      await member.remove_roles(visarole)
-      refetch_member = await guild.fetch_member(member.id)
-      # check if we added visa role
-      if await self.has_visa(refetch_member):
-        await self.send_to_spam(
-          "An error has occured where a permanent member of the server, {}, has retained their visa role after attempted     removal of visa role"
-          .format(name))
-        return [False, False]
-      else:
-        await self.send_to_spam(
-          "Visa has been removed from {}. You are considered a permanent member of the server"
-          .format(name))
-        return [True, False]
-    # there is no reason we should be here. likely the refetch member was successful and a member wasn't kicked when they should've been
-    await self.send_to_spam(
-      "An error has occured: likely {} that visabot attempted to kick is still on the server."
-      .format(name))
-    return [False, False]
-
-  async def purge_all_overstayed_visa(self) -> bool:
-    success = True
-    execution_executed = False
-    kick_list = await self.get_all_visarole_members()
-    for member in kick_list:
-      if self.time_left_value_seconds(member) <= 0:
-        tracker_bools = await self.attempt_kick_visarole_member(member)
-        single_success = tracker_bools[0]
-        single_execution = tracker_bools[1]
-        success = single_success and success
-        execution_executed = execution_executed or single_execution
-
-    if execution_executed:
-      await self.send_to_spam('Commencing execution:')
-      random_purge_gif = self.get_random_delete_gif()
-      with open(random_purge_gif, 'rb') as f:
-        picture = discord.File(f)
-        spam_channel = await self.get_admin_spam_channel()
-        await spam_channel.send(file=picture)
-    return success
-
-  async def visa_status_message(self, members: list, channel) -> bool:
-    extra_warning = False
-    for member in members:
-      time_left_val = self.time_left_value_seconds(member)
-      has_visa_message = "{} has {}".format(self.get_nick_or_name(member),
-                                            self.time_left_message(member))
-      no_visa_message = (
-        "{} is considered a permanent member of the server.".format(
-          self.get_nick_or_name(member)))
-      has_visa = await self.has_visa(member)
-      if has_visa:
-        await channel.send(has_visa_message)
-        if time_left_val < 60 * 60 * 12:
-          extra_warning = True
-      else:
-        await channel.send(no_visa_message)
-    if extra_warning:
-      with open(self.warning_gif, 'rb') as f:
-        picture = discord.File(f)
-        await channel.send(file=picture)
-    return True
-
-  async def has_visa(self, member) -> bool:
-    visarole = await self.get_visa_role()
-    if visarole in member.roles:
-      return True
-    else:
-      return False
-
-  async def on_message(self, message):
-    guild = await self.get_guild()
-    # this is just for memes
-    delete_me_messages = [
-      "delete me", "kill me", "what would it look like if i got deleted?",
-      "what would it look like if i got deleted", "end me", "show me my end",
-      "execute me", "destroy me", "let it end"
-    ]
-    # wrong guild
-    if message.guild != guild:
-      return
-    # prevent infinite recursion
-    if message.author == client.user:
-      return
-    cleaned = message.clean_content
-    visabot = await guild.fetch_member(self.bot_id)
-    if message.content.lower() in delete_me_messages:
-      random_purge_gif = self.get_random_delete_gif()
-      with open(random_purge_gif, 'rb') as f:
-        picture = discord.File(f)
-        await message.channel.send(file=picture)
-    elif (self.get_at(visabot)) in message.content:
-      await message.channel.send('oh no im a little baby')
-    elif cleaned.startswith("!visa"):
-      # only works for one @
-      # this can be made to error but I'm leaving it so that people can spam me
-      if message.content == "!visa":
-        author_id = message.author.id
-        member = await guild.fetch_member(author_id)
-      elif "@" in message.content:
-        # this will error if anything other than a properly formatted user id is after the at and in between the "<" and ">"
-        start = message.content.index("<") + 2
-        end = message.content.index(">")
-        id = int(message.content[start:end])
-        member = await guild.fetch_member(id)
-      else:
-        # only looking for name # discriminator
-        start = message.content.index(" ") + 1
-        after_visa_content = message.content[start:len(message.content)]
-        if after_visa_content == "all":
-          visarole_members = await self.get_all_visarole_members()
-          if visarole_members == []:
-            await message.channel.send(
-              "No one with a visa role has been found. You are all safe... for now..."
-            )
-            return
-          await self.visa_status_message(visarole_members, message.channel)
-          return
-        else:
-          found = False
-          async for member in guild.fetch_members(limit=None):
-            name = member.name + "#" + member.discriminator
-            if after_visa_content == name:
-              found = True
-              break
-          if not found:
-            await message.channel.send(
-              "Member {} not found. Make sure you have the correct \"name#discriminator\" combination."
-              .format(after_visa_content))
-            return
-      await self.visa_status_message([member], message.channel)
-
-  async def report_online(self):
-    guild = await self.get_guild()
-    status_channel = await guild.fetch_channel(self.bot_status_channel)
-    await status_channel.send('Visabot Online')
-
-  async def report_offline(self):
-    guild = await self.get_guild()
-    status_channel = await guild.fetch_channel(self.bot_status_channel)
-    await status_channel.send('Visabot going Offline')
-
-  async def report_error(self):
-    dev = await self.get_dev_member()
-    dev_at = self.get_at(dev)
-    await self.send_to_spam(
-      'Visabot has error - {} get on and fix it you dummy'.format(dev_at))
-
-  async def add_visa_after_offline(self) -> bool:
-    guild = await self.get_guild()
-    last_around = self.get_last_around()
-    joined_during_offline_members = []
-    async for member in guild.fetch_members(limit=None):
-      if (last_around - member.joined_at).total_seconds() <= 0:
-        joined_during_offline_members.append(member)
-    visarole = await self.get_visa_role()
-    success = True
-    for member in joined_during_offline_members:
-      if not (await self.has_visa(member)):
-        name = self.get_at(member)
-        await member.add_roles(visarole)
-        warning_message = ("{} has been given a visa. \n You have {}.").format(
-          name, self.time_left_message(member))
-        await self.send_to_spam(warning_message)
-        refetch_member = await guild.fetch_member(member.id)
-        # check if we added visa role
-        if not (await self.has_visa(refetch_member)):
-          success = False
-    now = get_now()
-    self.update_var_json({'LAST_TIME_OF_ACTION': str(now)})
-    return success
-
-  async def on_ready(self):
-    print(f'We have logged in as {client.user}')
-    now = get_now()
-    basic_activity = discord.Activity(created_at=now,
-                                      name="you",
-                                      start=now,
-                                      type=discord.ActivityType.watching,
-                                      status=discord.Status.online)
-    await client.change_presence(activity=basic_activity)
-
-    success = await self.add_visa_after_offline()
-    if not success:
-      await self.send_to_spam('Adding Visas has failed')
-      await self.report_error()
-
-    success = await self.purge_all_overstayed_visa()
-    if not success:
-      await self.send_to_spam('Purge has failed')
-      await self.report_error()
-
-  async def on_member_join(self, member: discord.Member):
-    guild = await self.get_guild()
-    member_id = member.id
-    member = await guild.fetch_member(member_id)
-    visarole = await self.get_visa_role()
-    await member.add_roles(visarole)
-    now = get_now()
-    name = self.get_at(member)
-    warning_message = ("{} has been given a visa. \n You have {}.").format(
-      name, self.time_left_message(member))
-    await self.send_to_spam(warning_message)
-    self.update_var_json({'LAST_TIME_OF_ACTION': str(now)})
-
-  async def setup_hook(self) -> None:
-    # start the task to run in the background
-    self.purge_visas_background_task.start()
-
-  @tasks.loop(seconds=300)  # task runs every 60 seconds
-  async def purge_visas_background_task(self):
-    print("Attempting Purge at {}".format(get_now()))
-    success = await self.purge_all_overstayed_visa()
-    if success:
-      pass
-    else:
-      await self.send_to_spam('Purge has failed')
-      await self.report_error()
-    now = get_now()
-    self.update_var_json({'LAST_TIME_OF_ACTION': str(now)})
-
-  @purge_visas_background_task.before_loop
-  async def before_purge_background_task(self):
-    await self.wait_until_ready()  # wait until the bot logs in
-
-  async def on_error(self, event_method: str, *args, **kwargs) -> None:
-    # ratelimit_blurb = "The owner of this website (discord.com) has banned you temporarily from accessing this website"
-    await self.report_error()
-    guild = await self.get_guild()
-    status_channel = await guild.fetch_channel(self.bot_status_channel)
-    await status_channel.send('Visabot has an error')
-
-    await self.send_to_spam('During method: {}'.format(event_method))
-    self.error_counter += 1
-    if self.error_counter > 10:
-      self.report_offline()
-      await client.close()
-    return await super().on_error(event_method, *args, **kwargs)
-
-  async def on_disconnect(self):
-    print("DISCONNECT")
-    now = get_now()
-    self.update_var_json({'LAST_TIME_OF_ACTION': str(now)})
-    await self.report_offline()
-
-  async def on_resumed(self):
-    print("RESUME")
-    await self.report_online()
-
-  async def on_connect(self):
-    print("CONNECT")
-    await self.report_online()
-
-  async def on_shard_disconnect(self):
-    print("DISCONNECT SHARD")
-    await self.report_offline()
-
-  async def on_shard_connect(self):
-    print("CONNECT SHARD")
-    await self.report_online()
-
-  async def on_shared_resumed(self):
-    print("RESUME SHARD")
-    await self.report_online()
-
-
-test_mode = False
-
-config_file = 'config.json'
-if test_mode:
-  config_file = "test_" + config_file
-
-with open(config_file, 'r') as f:
-  data = json.load(f)
-  print(data)
-  BOT_TOKEN = data['TOKEN']
+        config_path +="/config.json"
+    with open(config_path) as file:
+        config = json.load(file)
+    config['test_mode'] = test_mode
 
 intents = discord.Intents.all()
 #theoretically redundant but just in case
@@ -461,46 +42,211 @@ intents.members = True
 intents.presences = True
 intents.guilds = True
 
-# intents.
-client = MyClient(data, test_mode, intents=intents)
+bot = Bot(command_prefix=commands.when_mentioned_or(
+    config["prefix"]), intents=intents, help_command=None)
 
-print("here")
+# Setup both of the loggers
+class LoggingFormatter(logging.Formatter):
+    # Colors
+    black = "\x1b[30m"
+    red = "\x1b[31m"
+    green = "\x1b[32m"
+    yellow = "\x1b[33m"
+    blue = "\x1b[34m"
+    gray = "\x1b[38m"
+    # Styles
+    reset = "\x1b[0m"
+    bold = "\x1b[1m"
 
-# TODO
-# @client.hybrid_group(fallback="get")
-# async def visa(self, ctx, member_name):
-#   found = False
-#   guild = await self.get_guild()
-#   async for member in guild.fetch_members(limit=None):
-#     name = member.name + "#" + member.discriminator
-#     if member_name == name:
-#       found = True
-#       break
-#   if not found:
-#     await self.send_to_spam(
-#       "Member {} not found. Make sure you have the correct \"name#discriminator\" combination."
-#       .format(member_name))
-#     return
-#   await self.visa_status_message([member], await self.get_admin_spam_channel)
+    COLORS = {
+        logging.DEBUG: gray + bold,
+        logging.INFO: blue + bold,
+        logging.WARNING: yellow + bold,
+        logging.ERROR: red,
+        logging.CRITICAL: red + bold
+    }
 
-# @visa.command()
-# async def all(ctx, name):
-#   await ctx.send(f"Created tag: {name}")
+    def format(self, record):
+        log_color = self.COLORS[record.levelno]
+        format = "(black){asctime}(reset) (levelcolor){levelname:<8}(reset) (green){name}(reset) {message}"
+        format = format.replace("(black)", self.black + self.bold)
+        format = format.replace("(reset)", self.reset)
+        format = format.replace("(levelcolor)", log_color)
+        format = format.replace("(green)", self.green + self.bold)
+        formatter = logging.Formatter(format, "%Y-%m-%d %H:%M:%S", style="{")
+        return formatter.format(record)
 
-# @visa.command()
-# async def at(ctx, name):
-#   await ctx.send(f"Created tag: {name}")
 
-if not test_mode:
-  try:
-    keep_alive()
-  except:
-    print("Website doesn't work?")
-    os.system('kill 1')
-    os.system('python restarter.py')
-try:
-  client.run(BOT_TOKEN)
-except:
-  print("BLOCKED BY RATE LIMITING - RESTARTING NOW")
-  os.system('kill 1')
-  os.system('python restarter.py')
+logger = logging.getLogger("discord_bot")
+logger.setLevel(logging.INFO)
+
+# Console handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(LoggingFormatter())
+# File handler
+file_handler = logging.FileHandler(
+    filename="discord.log", encoding="utf-8", mode="w")
+file_handler_formatter = logging.Formatter(
+    "[{asctime}] [{levelname:<8}] {name}: {message}", "%Y-%m-%d %H:%M:%S", style="{")
+file_handler.setFormatter(file_handler_formatter)
+
+# Add the handlers
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+bot.logger = logger
+
+
+async def init_db():
+    async with aiosqlite.connect(f"{os.path.realpath(os.path.dirname(__file__))}/database/database.db") as db:
+        with open(f"{os.path.realpath(os.path.dirname(__file__))}/database/schema.sql") as file:
+            await db.executescript(file.read())
+        await db.commit()
+
+
+"""
+Create a bot variable to access the config file in cogs so that you don't need to import it every time.
+
+The config is available using the following code:
+- bot.config # In this file
+- self.bot.config # In cogs
+"""
+bot.config = config
+
+
+@bot.event
+async def on_ready() -> None:
+    """
+    The code in this event is executed when the bot is ready.
+    """
+    bot.logger.info(f"Logged in as {bot.user.name}")
+    bot.logger.info(f"discord.py API version: {discord.__version__}")
+    bot.logger.info(f"Python version: {platform.python_version()}")
+    bot.logger.info(
+        f"Running on: {platform.system()} {platform.release()} ({os.name})")
+    bot.logger.info("-------------------")
+    basic_activity = discord.Activity(name="you",
+                                      type=discord.ActivityType.watching,
+                                      status=discord.Status.online)
+    await bot.change_presence(activity=basic_activity)
+    if config["sync_commands_globally"]:
+        bot.logger.info("Syncing commands globally...")
+        await bot.tree.sync()
+    # TODO add visa retroactively
+    # TODO purge overstayed visa
+
+@bot.event
+async def on_message(message: discord.Message) -> None:
+    """
+    The code in this event is executed every time someone sends a message, with or without the prefix
+
+    :param message: The message that was sent.
+    """
+    if message.author == bot.user or message.author.bot:
+        return
+    await bot.process_commands(message)
+    # TODO add for dev is immortal bissh
+
+
+@bot.event
+async def on_command_completion(context: Context) -> None:
+    """
+    The code in this event is executed every time a normal command has been *successfully* executed.
+
+    :param context: The context of the command that has been executed.
+    """
+    full_command_name = context.command.qualified_name
+    split = full_command_name.split(" ")
+    executed_command = str(split[0])
+    if context.guild is not None:
+        bot.logger.info(
+            f"Executed {executed_command} command in {context.guild.name} (ID: {context.guild.id}) by {context.author} (ID: {context.author.id})")
+    else:
+        bot.logger.info(
+            f"Executed {executed_command} command by {context.author} (ID: {context.author.id}) in DMs")
+
+
+@bot.event
+async def on_command_error(context: Context, error) -> None:
+    """
+    The code in this event is executed every time a normal valid command catches an error.
+
+    :param context: The context of the normal command that failed executing.
+    :param error: The error that has been faced.
+    """
+    if isinstance(error, commands.CommandOnCooldown):
+        minutes, seconds = divmod(error.retry_after, 60)
+        hours, minutes = divmod(minutes, 60)
+        hours = hours % 24
+        embed = discord.Embed(
+            description=f"**Please slow down** - You can use this command again in {f'{round(hours)} hours' if round(hours) > 0 else ''} {f'{round(minutes)} minutes' if round(minutes) > 0 else ''} {f'{round(seconds)} seconds' if round(seconds) > 0 else ''}.",
+            color=0xE02B2B
+        )
+        await context.send(embed=embed)
+    elif isinstance(error, exceptions.UserBlacklisted):
+        """
+        The code here will only execute if the error is an instance of 'UserBlacklisted', which can occur when using
+        the @checks.not_blacklisted() check in your command, or you can raise the error by yourself.
+        """
+        embed = discord.Embed(
+            description="You are blacklisted from using the bot!",
+            color=0xE02B2B
+        )
+        await context.send(embed=embed)
+        bot.logger.warning(
+            f"{context.author} (ID: {context.author.id}) tried to execute a command in the guild {context.guild.name} (ID: {context.guild.id}), but the user is blacklisted from using the bot.")
+    elif isinstance(error, exceptions.UserNotOwner):
+        """
+        Same as above, just for the @checks.is_owner() check.
+        """
+        embed = discord.Embed(
+            description="You are not the owner of the bot!",
+            color=0xE02B2B
+        )
+        await context.send(embed=embed)
+        bot.logger.warning(
+            f"{context.author} (ID: {context.author.id}) tried to execute an owner only command in the guild {context.guild.name} (ID: {context.guild.id}), but the user is not an owner of the bot.")
+    elif isinstance(error, commands.MissingPermissions):
+        embed = discord.Embed(
+            description="You are missing the permission(s) `" + ", ".join(
+                error.missing_permissions) + "` to execute this command!",
+            color=0xE02B2B
+        )
+        await context.send(embed=embed)
+    elif isinstance(error, commands.BotMissingPermissions):
+        embed = discord.Embed(
+            description="I am missing the permission(s) `" + ", ".join(
+                error.missing_permissions) + "` to fully perform this command!",
+            color=0xE02B2B
+        )
+        await context.send(embed=embed)
+    elif isinstance(error, commands.MissingRequiredArgument):
+        embed = discord.Embed(
+            title="Error!",
+            # We need to capitalize because the command arguments have no capital letter in the code.
+            description=str(error).capitalize(),
+            color=0xE02B2B
+        )
+        await context.send(embed=embed)
+    else:
+        raise error
+
+
+async def load_cogs() -> None:
+    """
+    The code in this function is executed whenever the bot will start.
+    """
+    for file in os.listdir(f"{os.path.realpath(os.path.dirname(__file__))}/cogs"):
+        if file.endswith(".py"):
+            extension = file[:-3]
+            try:
+                await bot.load_extension(f"cogs.{extension}")
+                bot.logger.info(f"Loaded extension '{extension}'")
+            except Exception as e:
+                exception = f"{type(e).__name__}: {e}"
+                bot.logger.error(
+                    f"Failed to load extension {extension}\n{exception}")
+
+
+asyncio.run(init_db())
+asyncio.run(load_cogs())
+bot.run(config["token"])

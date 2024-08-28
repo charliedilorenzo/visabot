@@ -8,3 +8,4 @@ test_var_tracker.json
 /__pycache__/*
 /bot-env/*
 .env
+.venv

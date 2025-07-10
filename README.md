@@ -1,6 +1,10 @@
-## README
+# README
 
-Usecase:
+## Credits
+
+Forked off [Python-Discord-Bot-Template](https://github.com/kkrypt0nn/Python-Discord-Bot-Template) created by user [kkrypt0nn](https://github.com/kkrypt0nn)
+
+## Usage
 
 You want to be able to add people to a discord server and to automatically have them kicked after a specified amount of time. Additionally, you can intervene manually to prevent this process.
 
@@ -19,6 +23,3 @@ Technical detail below
 
 - create a role called "Visa"
 - manage perms of "Visa"
-
-# temp
-Making a temporary change to test something

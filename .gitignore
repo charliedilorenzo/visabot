@@ -9,3 +9,6 @@ test_var_tracker.json
 /bot-env/*
 .env
 .venv
+token.txt
+server.txt
+discord.log

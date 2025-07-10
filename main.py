@@ -17,26 +17,35 @@ import aiosqlite
 import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot, Context
-
+from pathlib import Path
 import exceptions
-from keep_alive import keep_alive
+import dotenv
+from distutils.util import strtobool
+EXPECTED_ENV_VALUES = set([
+    "SERVER",
+    "TOKEN"
+])
 
-test_mode = False
+env_values = dotenv.dotenv_values(".env")
 
-path = os.path.join(os.path.realpath(os.path.dirname(__file__)), "config.json")
-if test_mode:
-  config_path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                             "test_config.json")
-  if not os.path.isfile(f"{config_path}"):
-    sys.exit("'config.json' not found! Please add it and try again.")
-else:
-  config_path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                             "config.json")
-  if not os.path.isfile(f"{config_path}"):
-    sys.exit("'config.json' not found! Please add it and try again.")
-with open(config_path) as file:
-  config = json.load(file)
-config['test_mode'] = test_mode
+found_env_keys = EXPECTED_ENV_VALUES.intersection(set(env_values.keys()))
+missing_env_keys = EXPECTED_ENV_VALUES - found_env_keys
+if missing_env_keys:
+  # something like - 'SERVER', 'TOKEN'
+  missing_keys_string = '\', \''.join(missing_env_keys)
+  print(f"Env requires keys: '{missing_keys_string}'")
+  sys.exit(1)
+
+
+test_mode = strtobool(env_values.get("TEST", True)) == 1
+prefix = env_values.get("COMMAND_PREFIX", "visabot")
+server = env_values["SERVER"]
+token = env_values["TOKEN"]
+# sys.exit(0)
+config = {}
+config["test_mode"] = test_mode
+config["token"] = token
+config["server_id"] = server
 
 intents = discord.Intents.all()
 #theoretically redundant but just in case
@@ -45,7 +54,7 @@ intents.members = True
 intents.presences = True
 intents.guilds = True
 
-bot = Bot(command_prefix=commands.when_mentioned_or(config["prefix"]),
+bot = Bot(command_prefix=commands.when_mentioned_or(prefix),
           intents=intents,
           help_command=None)
 
@@ -140,7 +149,8 @@ async def on_ready() -> None:
                                     type=discord.ActivityType.watching,
                                     status=discord.Status.online)
   await bot.change_presence(activity=basic_activity)
-  if config["sync_commands_globally"]:
+  # TODO what the heck was this for
+  if config.get("sync_commands_globally"):
     bot.logger.info("Syncing commands globally...")
     await bot.tree.sync()
   # TODO add visa retroactively

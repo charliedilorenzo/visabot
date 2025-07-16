@@ -8,14 +8,12 @@ Version: 5.5.0
 
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot, Context
-import datetime
 
 from helpers import checks
 import discord
 import math
 import os
 import random
-import json
 from .cogclasses import VisaCog
 
 

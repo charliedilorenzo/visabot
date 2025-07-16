@@ -8,7 +8,6 @@ Version: 5.5.0
 
 import random
 
-import aiohttp
 import discord
 from discord.ext import commands
 from discord.ext.commands import Context

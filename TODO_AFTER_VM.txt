@@ -1,0 +1,15 @@
+
+- get rid of self.get_guiold and replace it with self.guild which is a variable assigned at on_ready
+- use timedelta and stuff ro checking the time instead of whatever bs I had before
+- add dev_id for message stuff dev_id (search for the files that have it)
+- move stuff that is main out to better places (espeically todos)
+- investigate and this more deeply about which classes should have which functions (cause they be kinda jumbled)
+- readjust @ stuff after name discrimator and nick name and all that has been changed
+
+- Figure out how to replace that with SQL database
+- go back and rereference cu4rrent env to figure out what is actually needed
+
+
+- funny reaction if asking for my visa
+
+- Figure out how to make a testbed for this

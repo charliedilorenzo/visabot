@@ -14,13 +14,19 @@ import discord
 import math
 import os
 import random
-from .cogclasses import VisaCog
+from base.cogclasses import VisaCog
+from pathlib import Path
+
+MEDIA = Path(__file__).parent.parent / "media"
 
 
 # TODO add last offline to db or somethings
 # Here we name the cog and create a new class for the cog.
 # TODO make another cog with some kind of polls function?
 class Visabot(VisaCog, name="visabot"):
+
+  def __init__(self, bot: Bot):
+    super().__init__(bot)
 
   def get_help_blurb(self, embed: discord.Embed) -> str:
     prefix = self.bot.config['prefix']
@@ -44,9 +50,6 @@ class Visabot(VisaCog, name="visabot"):
                     value=f'```{help_text}```',
                     inline=False)
     return embed
-
-  def __init__(self, bot: Bot):
-    super().__init__(bot)
 
   def time_left_value_seconds(self, member: discord.Member) -> int:
     now = self.get_now()
@@ -98,13 +101,9 @@ class Visabot(VisaCog, name="visabot"):
     return message
 
   async def send_random_delete_gif(self, channel: discord.TextChannel) -> str:
-    purge_directory = os.path.join(self.main_dir, "purge_gifs")
-    delete_gifs = []
-    for file in os.listdir(purge_directory):
-      if file.endswith(".gif"):
-        delete_gifs.append(purge_directory + "/" + file)
-    gif = random.choice(delete_gifs)
-    with open(gif, 'rb') as f:
+    purge_directory = MEDIA / "purge_gifs"
+    gif_file = random.choice(list(purge_directory.iterdir()))
+    with open(gif_file, 'rb') as f:
       picture = discord.File(f)
       await channel.send(file=picture)
 
@@ -116,10 +115,10 @@ class Visabot(VisaCog, name="visabot"):
   @checks.not_blacklisted()
   async def visa(self, context: Context):
     """
-        Lets you add or remove a user from not being able to use the bot.
+    Lets you add or remove a user from not being able to use the bot.
 
-        :param context: The hybrid command context.
-        """
+    :param context: The hybrid command context.
+    """
     if not self.correct_guild_check(context.guild):
       return
     member = ""
@@ -194,7 +193,7 @@ class Visabot(VisaCog, name="visabot"):
       total = len((await self.get_visa_role(context.guild)).members)
       embed.set_footer(
         text=
-        f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'member'} with the Visa role."
+        f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'members'} with the Visa role."
       )
     await context.send(embed=embed)
 
@@ -219,7 +218,7 @@ class Visabot(VisaCog, name="visabot"):
     total = len((await self.get_visa_role(context.guild)).members)
     embed.set_footer(
       text=
-      f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'member'} with the Visa role."
+      f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'members'} with the Visa role."
     )
     await context.send(embed=embed)
 
@@ -244,7 +243,7 @@ class Visabot(VisaCog, name="visabot"):
     total = len((await self.get_visa_role(context.guild)).members)
     embed.set_footer(
       text=
-      f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'member'} with the Visa role."
+      f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'members'} with the Visa role."
     )
     await context.send(embed=embed)
     # TODO when people ask for my visa tell them im super cool i will never get kicked by visabot but say it cool
@@ -310,7 +309,6 @@ class Visabot(VisaCog, name="visabot"):
       f"There {'is' if total == 1 else 'are'} now {total} {'user' if total == 1 else 'users'} with the Visa role."
     )
     await spam_channel.send(embed=embed)
-    self.update_var_json({'LAST_TIME_OF_ACTION': str(now)})
 
   @commands.Cog.listener()
   async def on_message(self, message):
@@ -337,35 +335,37 @@ class Visabot(VisaCog, name="visabot"):
       await message.channel.send('oh no im a little baby')
 
   async def add_visa_after_offline(self) -> bool:
-    guild = await self.bot.fetch_guild(self.bot.config['guild_id'])
-    last_around = self.get_last_around()
-    joined_during_offline_members = []
-    print(self.bot.config["spam_channel"])
-    spam_channel = await self.get_spam_channel()
-    async for member in guild.fetch_members(limit=None):
-      if (last_around - member.joined_at).total_seconds() <= 0:
-        joined_during_offline_members.append(member)
-    visarole = await self.get_visa_role(guild)
-    success = True
-    for member in joined_during_offline_members:
-      if not (await self.has_visa(member, guild)):
-        name = self.get_at(member)
-        await member.add_roles(visarole)
-        await spam_channel.send("{}".format(name))
-        warning_message = ("{} has been given a visa. \n You have {}.").format(
-          name, self.time_left_message(member))
-        embed = discord.Embed(description=f"{warning_message}")
-        total = await self.get_visa_total()
-        embed.set_footer(
-          text=
-          f"There {'is' if total == 1 else 'are'} now {total} {'user' if total == 1 else 'users'} with the Visa role."
-        )
-        await spam_channel.send(embed=embed)
-        refetch_member = await guild.fetch_member(member.id)
-        # check if we added visa role
-        if not (await self.has_visa(refetch_member, guild)):
-          success = False
-    return success
+    # TODO reenable when we add visa to DB
+    return True
+    # guild = await self.bot.fetch_guild(self.bot.config['server_id'])
+    # last_around = self.get_last_around()
+    # joined_during_offline_members = []
+    # print(self.bot.config["spam_channel"])
+    # spam_channel = await self.get_spam_channel()
+    # async for member in guild.fetch_members(limit=None):
+    #   if (last_around - member.joined_at).total_seconds() <= 0:
+    #     joined_during_offline_members.append(member)
+    # visarole = await self.get_visa_role(guild)
+    # success = True
+    # for member in joined_during_offline_members:
+    #   if not (await self.has_visa(member, guild)):
+    #     name = self.get_at(member)
+    #     await member.add_roles(visarole)
+    #     await spam_channel.send("{}".format(name))
+    #     warning_message = ("{} has been given a visa. \n You have {}.").format(
+    #       name, self.time_left_message(member))
+    #     embed = discord.Embed(description=f"{warning_message}")
+    #     total = await self.get_visa_total()
+    #     embed.set_footer(
+    #       text=
+    #       f"There {'is' if total == 1 else 'are'} now {total} {'user' if total == 1 else 'users'} with the Visa role."
+    #     )
+    #     await spam_channel.send(embed=embed)
+    #     refetch_member = await guild.fetch_member(member.id)
+    #     # check if we added visa role
+    #     if not (await self.has_visa(refetch_member, guild)):
+    #       success = False
+    # return success
 
   @commands.Cog.listener()
   async def on_ready(self):
@@ -436,8 +436,10 @@ class Visabot(VisaCog, name="visabot"):
 
   async def purge_all_overstayed_visa(self) -> bool:
     success = True
+    # TODO add back purging visa
+    return success
     execution_executed = False
-    guild = self.bot.get_guild(self.bot.config['guild_id'])
+    guild = self.bot.get_guild(self.bot.config['server_id'])
     kick_list = await self.get_all_visarole_members(guild)
     spam_channel = await self.get_spam_channel()
     for member in kick_list:
@@ -447,6 +449,8 @@ class Visabot(VisaCog, name="visabot"):
         single_execution = tracker_bools[1]
         success = single_success and success
         execution_executed = execution_executed or single_execution
+    else:
+      execution_executed = True
     if execution_executed:
       await spam_channel.send('Commencing execution:')
       await self.send_random_delete_gif(spam_channel)
@@ -463,7 +467,6 @@ class Visabot(VisaCog, name="visabot"):
       await spam_channel.send('Purge has failed')
       await self.report_error()
     now = self.get_now()
-    self.update_var_json({'LAST_TIME_OF_ACTION': str(now)})
 
   @purge_visas_background_task.before_loop
   async def before_purge_background_task(self):

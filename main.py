@@ -7,7 +7,6 @@ Version: 5.5.0
 """
 
 import asyncio
-import json
 import logging
 import os
 import platform
@@ -15,18 +14,19 @@ import sys
 
 import aiosqlite
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 from discord.ext.commands import Bot, Context
-from pathlib import Path
 import exceptions
 import dotenv
 from distutils.util import strtobool
+from typing import Dict
 EXPECTED_ENV_VALUES = set([
     "SERVER",
     "TOKEN"
 ])
+from base.cogclasses import ConfigedBot
 
-env_values = dotenv.dotenv_values(".env")
+env_values: Dict[str, str] = dotenv.dotenv_values(".env")
 
 found_env_keys = EXPECTED_ENV_VALUES.intersection(set(env_values.keys()))
 missing_env_keys = EXPECTED_ENV_VALUES - found_env_keys
@@ -36,16 +36,9 @@ if missing_env_keys:
   print(f"Env requires keys: '{missing_keys_string}'")
   sys.exit(1)
 
-
-test_mode = strtobool(env_values.get("TEST", True)) == 1
-prefix = env_values.get("COMMAND_PREFIX", "visabot")
-server = env_values["SERVER"]
-token = env_values["TOKEN"]
-# sys.exit(0)
-config = {}
-config["test_mode"] = test_mode
-config["token"] = token
-config["server_id"] = server
+config = {key.lower(): value for key, value in env_values.items()}
+config["test_mode"] = strtobool(config.get("test", True)) == 1
+config["server_id"] = config.get("server")
 
 intents = discord.Intents.all()
 #theoretically redundant but just in case
@@ -54,7 +47,7 @@ intents.members = True
 intents.presences = True
 intents.guilds = True
 
-bot = Bot(command_prefix=commands.when_mentioned_or(prefix),
+bot = ConfigedBot(command_prefix=commands.when_mentioned_or(config["command_prefix"]),
           intents=intents,
           help_command=None)
 
@@ -270,13 +263,6 @@ async def load_cogs() -> None:
 asyncio.run(init_db())
 asyncio.run(load_cogs())
 
-if not test_mode:
-  try:
-    keep_alive()
-  except:
-    print("Website doesn't work?")
-    os.system('kill 1')
-    os.system('python restarter.py')
 try:
   bot.run(config["token"])
 except KeyboardInterrupt:

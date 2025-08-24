@@ -14,29 +14,18 @@ from helpers import checks
 import discord
 import os
 import json
+from typing import TypedDict
 
 
-def correct_guild_check_method(self, guild: discord.Guild):
-  main_dir = f"{os.path.realpath(os.path.dirname(__file__))}"
-  main_dir = self.main_dir.replace("\cogs", "")
-  main_dir = self.main_dir.replace("/cogs", "")
+class Config(TypedDict):
+  test_mode: True
+  token: str
+  server_id: str
+  spam_channel: str
 
-  with open(os.join(main_dir, self.tracker_file), 'r') as openfile:
-    data = json.load(openfile)
-  return data
-  # expects guild id: int or guild: discord.guild
-  if isinstance(guild, discord.Guild):
-    if guild.id != self.bot.config['guild_id']:
-      return False
-  elif isinstance(guild, int):
-    if guild != self.bot.config['guild_id']:
-      return False
-  else:
-    return False
-  return True
+class ConfigedBot(Bot):
+  config: Config
 
-
-# Here we name the cog and create a new class for the cog.
 class GuildedCog(commands.Cog):
 
   def get_now(self) -> datetime.datetime:
@@ -48,19 +37,7 @@ class GuildedCog(commands.Cog):
                                               "%Y-%m-%d %H:%M:%S.%f%z")
     return datetime_obj
 
-  def update_var_json(self, new_data: dict) -> bool:
-    data = self.get_json_data()
-    data.update(new_data)
-    with open(self.main_dir + "/" + self.tracker_file, "w") as outfile:
-      json.dump(data, outfile)
-    return True
-
-  def get_json_data(self) -> dict:
-    with open(self.main_dir + "/" + self.tracker_file, 'r') as openfile:
-      data = json.load(openfile)
-    return data
-
-  def __init__(self, bot: Bot):
+  def __init__(self, bot: ConfigedBot):
     self.bot = bot
     # manually import this just cause not in config i guess
     self.test_mode = bot.config['test_mode']
@@ -70,13 +47,10 @@ class GuildedCog(commands.Cog):
     print(self.main_dir)
     self.warning_gif = self.main_dir + "/visabot_is_watching_you.gif"
 
-    self.tracker_file = "var_tracker.json"
-    if self.test_mode:
-      self.tracker_file = "test_" + self.tracker_file
-    self.timestamp_before_online = self.get_json_data()['LAST_TIME_OF_ACTION']
+    self.server_id = self.bot.get_guild(self.bot.config['server_id'])
 
   async def get_guild(self) -> discord.Guild:
-    guild = await self.bot.fetch_guild(self.bot.config['guild_id'])
+    guild = await self.bot.fetch_guild(self.bot.config['server_id'])
     return guild
 
   # uses config to determine guild
@@ -88,8 +62,7 @@ class GuildedCog(commands.Cog):
   async def report_error(self, fetched_guild=None):
     if fetched_guild is None:
       fetched_guild = await self.get_guild()
-    dev_at = self.get_at(await
-                         fetched_guild.fetch_member(self.bot.config['dev_id']))
+    dev_at = self.get_at(await fetched_guild.fetch_member(self.bot.config['dev_id']))
     spam_channel = await self.get_spam_channel()
     await spam_channel.send(
       'Visabot has error - {} get on and fix it you dummy'.format(dev_at))
@@ -105,10 +78,10 @@ class GuildedCog(commands.Cog):
   def correct_guild_check(self, guild: discord.Guild):
     # expects guild id: int or guild: discord.guild
     if isinstance(guild, discord.Guild):
-      if guild.id != self.bot.config['guild_id']:
+      if guild.id != self.bot.config['server_id']:
         return False
     elif isinstance(guild, int):
-      if guild != self.bot.config['guild_id']:
+      if guild != self.bot.config['server_id']:
         return False
     else:
       return False
@@ -125,9 +98,8 @@ class GuildedCog(commands.Cog):
       await context.reply(embed=embed)
 
   def get_last_around(self) -> datetime.datetime:
-    last_around = self.str_datetime_to_datetime_obj(
-      self.timestamp_before_online)
-    return last_around
+    # raise NotImplementedError("Not getting last around rn")
+    print("SKIPPING LAST AROUND")
 
   async def user_to_member(self, user, fetched_guild=None):
     # method to get member from either id or from user object
@@ -148,12 +120,6 @@ class GuildedCog(commands.Cog):
   def get_at(self, member: discord.Member) -> str:
     at_member = "<@" + str(member.id) + ">"
     return at_member
-
-  def get_config_file(self) -> str:
-    if self.test_mode:
-      return self.main_dir + "/test_config.json"
-    else:
-      return self.main_dir + "/config.json"
 
   async def namediscriminator_to_member(self,
                                         name: str,
@@ -178,20 +144,14 @@ class GuildedCog(commands.Cog):
   async def designate_spam_channel(self, context: Context,
                                    channel: discord.TextChannel) -> None:
     """
-        The bot will say anything you want, but using embeds.
+    The bot will say anything you want, but using embeds.
 
-        :param context: The hybrid command context.
-        :param message: The message that should be repeated by the bot.
-        """
+    :param context: The hybrid command context.
+    :param message: The message that should be repeated by the bot.
+    """
+    # TODO this should be stored with database
+    raise NotImplementedError("This is currently no longer implemented")
     self.bot.config['spam_channel'] = channel.id
-    config_file = self.get_config_file()
-    with open(config_file, 'r') as openfile:
-      data = json.load(openfile)
-
-    data.update({"spam_channel": channel.id})
-
-    with open(config_file, "w") as outfile:
-      json.dump(data, outfile)
     message = "The bot's spam channel has been updated to: {}".format(
       channel.name)
     embed = discord.Embed(description=message, color=0x9C84EF)
@@ -205,19 +165,14 @@ class GuildedCog(commands.Cog):
   async def designate_status_channel(self, context: Context,
                                      channel: discord.TextChannel) -> None:
     """
-        The bot will say anything you want, but using embeds.
+    The bot will say anything you want, but using embeds.
 
-        :param context: The hybrid command context.
-        :param message: The message that should be repeated by the bot.
-        """
+    :param context: The hybrid command context.
+    :param message: The message that should be repeated by the bot.
+    """
+    # TODO this should be stored with database
+    raise NotImplementedError("This is currently no longer implemented")
     self.bot.config['bot_status_channel'] = channel.id
-
-    config_file = self.get_config_file()
-    with open(config_file, 'r') as openfile:
-      data = json.load(openfile)
-    data.update({"bot_status_channel": channel.id})
-    with open(config_file, "w") as outfile:
-      json.dump(data, outfile)
 
     message = "The bot's status channel has been updated to: {}".format(
       channel.name)

@@ -14,7 +14,6 @@ from discord.ext import commands
 
 from exceptions import *
 from helpers import db_manager
-# from .cogs.cogclasses import correct_guild_check_method
 
 T = TypeVar("T")
 

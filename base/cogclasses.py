@@ -15,6 +15,20 @@ import discord
 import os
 import json
 from typing import TypedDict
+from pathlib import Path
+from base import MEDIA_PATH
+
+
+def fetch_guild(func):
+  async def _wrapper(*args, **kwargs):
+    if fetched_guild := kwargs.get("fetched_guild"):
+      if fetched_guild is None:
+        self: VisaCog = args[0]
+        kwargs["fetched_guild"] = await self.get_guild()
+    result = await func(*args, **kwargs)
+    return result
+
+  return _wrapper
 
 
 class Config(TypedDict):
@@ -41,12 +55,7 @@ class GuildedCog(commands.Cog):
     self.bot = bot
     # manually import this just cause not in config i guess
     self.test_mode = bot.config['test_mode']
-    self.main_dir = f"{os.path.realpath(os.path.dirname(__file__))}"
-    self.main_dir = self.main_dir.replace("\cogs", "")
-    self.main_dir = self.main_dir.replace("/cogs", "")
-    print(self.main_dir)
-    self.warning_gif = self.main_dir + "/visabot_is_watching_you.gif"
-
+    self.warning_gif = MEDIA_PATH / "warning_gifs" / "visabot_is_watching_you.gif"
     self.server_id = self.bot.get_guild(self.bot.config['server_id'])
 
   async def get_guild(self) -> discord.Guild:
@@ -57,7 +66,7 @@ class GuildedCog(commands.Cog):
   async def get_spam_channel(self, fetched_guild=None) -> discord.TextChannel:
     if fetched_guild is None:
       fetched_guild = await self.get_guild()
-    return await fetched_guild.fetch_channel(self.bot.config['spam_channel'])
+    return await fetched_guild.fetch_channel(self.bot.config["spam_channel"])
 
   async def report_error(self, fetched_guild=None):
     if fetched_guild is None:
@@ -78,14 +87,8 @@ class GuildedCog(commands.Cog):
   def correct_guild_check(self, guild: discord.Guild):
     # expects guild id: int or guild: discord.guild
     if isinstance(guild, discord.Guild):
-      if guild.id != self.bot.config['server_id']:
-        return False
-    elif isinstance(guild, int):
-      if guild != self.bot.config['server_id']:
-        return False
-    else:
-      return False
-    return True
+      guild = guild.id
+    return guild == self.bot.config['server_id']
 
   async def wrong_guild_message(self, channel: discord.TextChannel,
                                 context):
@@ -112,10 +115,7 @@ class GuildedCog(commands.Cog):
 
   def get_nick_or_name(self, member: discord.Member) -> str:
     nickname = member.nick
-    if not nickname is None:
-      return nickname
-    else:
-      return member.name
+    return nickname if nickname is not None else member.name
 
   def get_at(self, member: discord.Member) -> str:
     at_member = "<@" + str(member.id) + ">"
@@ -130,10 +130,7 @@ class GuildedCog(commands.Cog):
     split = name.split("#")
     name = split[0]
     discriminator = split[1]
-    print(name)
-    print(discriminator)
     member = fetched_guild.get_member_named(name, discriminator)
-    print(member)
     return member
 
   @commands.hybrid_command(
@@ -184,6 +181,11 @@ class VisaCog(GuildedCog):
 
   def __init__(self, bot: Bot):
     super().__init__(bot)
+
+    # if self.bot.config['test_mode'] == True:
+    #   self.visa_length = datetime.timedelta(minutes=1)
+    # else:
+    #   self.visa_length = datetime.timedelta(days=7)
     days = 7
     hours = 0
     minutes = 0
@@ -202,14 +204,12 @@ class VisaCog(GuildedCog):
     visarole = discord.utils.get(fetched_guild.roles, name=self.role_name)
     return visarole
 
-  async def has_visa(self, member, fetched_guild=None) -> bool:
-    if fetched_guild is None:
-      fetched_guild = await self.get_guild()
+  @fetch_guild
+  async def has_visa(self, member: discord.Member, fetched_guild=None) -> bool:
+    # if fetched_guild is None:
+    #   fetched_guild = await self.get_guild()
     visarole = await self.get_visa_role(fetched_guild)
-    if visarole in member.roles:
-      return True
-    else:
-      return False
+    return visarole in member.roles
 
   async def get_all_visarole_members(self, fetched_guild=None):
     if fetched_guild is None:

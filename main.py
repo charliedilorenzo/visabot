@@ -38,7 +38,7 @@ if missing_env_keys:
 
 config = {key.lower(): value for key, value in env_values.items()}
 config["test_mode"] = strtobool(config.get("test", True)) == 1
-config["server_id"] = config.get("server")
+config["server_id"] = int(config.get("server"))
 
 intents = discord.Intents.all()
 #theoretically redundant but just in case

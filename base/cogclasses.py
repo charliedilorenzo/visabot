@@ -9,6 +9,8 @@ Version: 5.5.0
 from discord.ext import commands
 from discord.ext.commands import Bot, Context
 import datetime
+from discord.user import ClientUser
+from typing import Union
 
 from helpers import checks
 import discord
@@ -117,7 +119,7 @@ class GuildedCog(commands.Cog):
     nickname = member.nick
     return nickname if nickname is not None else member.name
 
-  def get_at(self, member: discord.Member) -> str:
+  def get_at(self, member: Union[discord.Member, ClientUser]) -> str:
     at_member = "<@" + str(member.id) + ">"
     return at_member
 

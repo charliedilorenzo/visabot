@@ -127,6 +127,7 @@ The config is available using the following code:
 bot.config = config
 
 
+# TODO can I move all of this somewhere else now?
 @bot.event
 async def on_ready() -> None:
   """
@@ -146,8 +147,6 @@ async def on_ready() -> None:
   if config.get("sync_commands_globally"):
     bot.logger.info("Syncing commands globally...")
     await bot.tree.sync()
-  # TODO add visa retroactively
-  # TODO purge overstayed visa
 
 
 @bot.event
@@ -160,7 +159,6 @@ async def on_message(message: discord.Message) -> None:
   if message.author == bot.user or message.author.bot:
     return
   await bot.process_commands(message)
-  # TODO add for dev is immortal bissh
 
 
 @bot.event

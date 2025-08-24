@@ -8,7 +8,11 @@ Version: 5.5.0
 
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot, Context
-
+from discord.message import Message
+from discord.member import Member
+from discord.user import ClientUser
+from discord.guild import Guild
+from typing import Optional
 from helpers import checks
 import discord
 import math
@@ -19,7 +23,6 @@ from pathlib import Path
 
 MEDIA = Path(__file__).parent.parent / "media"
 
-
 # TODO add last offline to db or somethings
 # Here we name the cog and create a new class for the cog.
 # TODO make another cog with some kind of polls function?
@@ -27,6 +30,8 @@ class Visabot(VisaCog, name="visabot"):
 
   def __init__(self, bot: Bot):
     super().__init__(bot)
+    self.guild: Optional[Guild] = None
+    self.visabot: ClientUser
 
   def get_help_blurb(self, embed: discord.Embed) -> str:
     prefix = self.bot.config['prefix']
@@ -288,7 +293,7 @@ class Visabot(VisaCog, name="visabot"):
     await self.send_random_delete_gif(context.channel)
 
   @commands.Cog.listener()
-  async def on_member_join(self, member):
+  async def on_member_join(self, member: Member):
     guild = member.guild
     if not self.correct_guild_check(guild):
       return
@@ -296,10 +301,8 @@ class Visabot(VisaCog, name="visabot"):
     member = await guild.fetch_member(member_id)
     visarole = await self.get_visa_role(guild)
     await member.add_roles(visarole)
-    now = self.get_now()
     name = self.get_at(member)
-    warning_message = ("{} has been given a visa. \n You have {}.").format(
-      name, self.time_left_message(member))
+    warning_message = (f"{name} has been given a visa. \n You have {self.time_left_message(member)}.")
     spam_channel = await self.get_spam_channel()
     await spam_channel.send("{}".format(name))
     embed = discord.Embed(description=f"{warning_message}")
@@ -311,7 +314,7 @@ class Visabot(VisaCog, name="visabot"):
     await spam_channel.send(embed=embed)
 
   @commands.Cog.listener()
-  async def on_message(self, message):
+  async def on_message(self, message: Message):
     # all of these are for memes and testing
     guild = message.guild
     if not self.correct_guild_check(guild):
@@ -324,15 +327,15 @@ class Visabot(VisaCog, name="visabot"):
     # prevent infinite recursion
     if message.author == self.bot.user:
       return
-    visabot = await guild.fetch_member(self.bot.config['application_id'])
     if message.content.lower() in delete_me_messages:
       await self.send_random_delete_gif(message.channel)
     # sometimes "<@&" in message.content instead?
-    elif (self.get_at(visabot)) in message.content:
+    elif (self.get_at(self.visabot)) in message.content:
       if (message.author.id == self.bot.config['dev_id']):
         await message.channel.send('kashikomarimashita Charlie-sama ')
         return
-      await message.channel.send('oh no im a little baby')
+      await message.channel.send(f'You called {self.get_nick_or_name(message.author)}?')
+      # await message.channel.send(f'You called {self.get_nick_or_name(message.author)}?')
 
   async def add_visa_after_offline(self) -> bool:
     # TODO reenable when we add visa to DB
@@ -369,6 +372,10 @@ class Visabot(VisaCog, name="visabot"):
 
   @commands.Cog.listener()
   async def on_ready(self):
+    self.guild = await self.get_guild()
+    print(f"Using guild {self.guild}")
+    self.visabot = self.bot.user
+    print(f"Visabot is {self.visabot}")
     success = await self.add_visa_after_offline()
     if not success:
       spam_channel = await self.get_spam_channel()

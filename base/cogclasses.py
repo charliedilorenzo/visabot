@@ -183,21 +183,10 @@ class VisaCog(GuildedCog):
 
   def __init__(self, bot: Bot):
     super().__init__(bot)
-
-    # if self.bot.config['test_mode'] == True:
-    #   self.visa_length = datetime.timedelta(minutes=1)
-    # else:
-    #   self.visa_length = datetime.timedelta(days=7)
-    days = 7
-    hours = 0
-    minutes = 0
-    seconds = 0
     if self.bot.config['test_mode'] == True:
-      days = 0
-      hours = 0
-      minutes = 1
-      seconds = 0
-    self.visa_length = 24 * 60 * 60 * days + 60 * 60 * hours + 60 * minutes + seconds
+      self.visa_length = datetime.timedelta(minutes=1)
+    else:
+      self.visa_length = datetime.timedelta(days=7)
     self.role_name = "Visa"
 
   async def get_visa_role(self, fetched_guild=None) -> discord.Role:

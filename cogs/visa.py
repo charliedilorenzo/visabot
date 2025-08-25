@@ -20,6 +20,7 @@ import os
 import random
 from base.cogclasses import VisaCog
 from pathlib import Path
+import datetime
 
 MEDIA = Path(__file__).parent.parent / "media"
 
@@ -56,26 +57,15 @@ class Visabot(VisaCog, name="visabot"):
                     inline=False)
     return embed
 
-  def time_left_value_seconds(self, member: discord.Member) -> int:
+  def time_left_value_seconds(self, member: discord.Member) -> datetime.timedelta:
     now = self.get_now()
     joined = member.joined_at
-    seconds_diff = (now - joined).total_seconds()
-    if seconds_diff > self.visa_length:
-      return 0
-    else:
-      return self.visa_length - int(seconds_diff)
+    seconds_diff = datetime.timedelta(seconds=(now - joined).total_seconds())
+    return max(self.visa_length - seconds_diff, datetime.timedelta(seconds=0))
 
   def time_left_message(self, member: discord.Member) -> str:
     time = self.time_left_value_seconds(member)
-    time = math.floor(time / 60)
-    minutes = time % 60
-    time = math.floor(time / 60)
-    hours = time % 24
-    time = math.floor(time / 24)
-    days = time
-    return (
-      ' ~{} Days, {} Hours, and {} Minutes remaining on your visa.').format(
-        days, hours, minutes)
+    return f'{time} remaining on your visa.'
 
   async def visa_status_message(self,
                                 members: list,
@@ -92,7 +82,7 @@ class Visabot(VisaCog, name="visabot"):
         non_permanent_detected = True
         message += "{} has {} \n".format(self.get_nick_or_name(member),
                                          self.time_left_message(member))
-        if time_left_val < 60 * 60 * 12:
+        if time_left_val < self.visa_length:
           extra_warning = True
       else:
         message += "{} is considered a permanent member of the server.\n".format(
@@ -329,13 +319,11 @@ class Visabot(VisaCog, name="visabot"):
       return
     if message.content.lower() in delete_me_messages:
       await self.send_random_delete_gif(message.channel)
-    # sometimes "<@&" in message.content instead?
     elif (self.get_at(self.visabot)) in message.content:
       if (message.author.id == self.bot.config['dev_id']):
         await message.channel.send('kashikomarimashita Charlie-sama ')
         return
       await message.channel.send(f'You called {self.get_nick_or_name(message.author)}?')
-      # await message.channel.send(f'You called {self.get_nick_or_name(message.author)}?')
 
   async def add_visa_after_offline(self) -> bool:
     # TODO reenable when we add visa to DB

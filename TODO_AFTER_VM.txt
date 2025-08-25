@@ -1,5 +1,5 @@
 
-- get rid of self.get_guiold and replace it with self.guild which is a variable assigned at on_ready
+- use fetch guild decorator
 - add dev_id for message stuff dev_id (search for the files that have it)
 - move stuff that is main out to better places (espeically todos)
 - investigate and this more deeply about which classes should have which functions (cause they be kinda jumbled)

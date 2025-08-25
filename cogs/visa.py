@@ -31,7 +31,6 @@ class Visabot(VisaCog, name="visabot"):
 
   def __init__(self, bot: Bot):
     super().__init__(bot)
-    self.guild: Optional[Guild] = None
     self.visabot: ClientUser
 
   def get_help_blurb(self, embed: discord.Embed) -> str:
@@ -72,7 +71,7 @@ class Visabot(VisaCog, name="visabot"):
                                 channel: discord.TextChannel,
                                 fetched_guild=None) -> bool:
     if fetched_guild == None:
-      fetched_guild = await self.get_guild()
+      fetched_guild = self.guild
     extra_warning = False
     message = ""
     non_permanent_detected = False
@@ -360,7 +359,7 @@ class Visabot(VisaCog, name="visabot"):
 
   @commands.Cog.listener()
   async def on_ready(self):
-    self.guild = await self.get_guild()
+    self.guild = await self.bot.fetch_guild(self.bot.config['server_id'])
     print(f"Using guild {self.guild}")
     self.visabot = self.bot.user
     print(f"Visabot is {self.visabot}")
@@ -434,7 +433,7 @@ class Visabot(VisaCog, name="visabot"):
     # TODO add back purging visa
     return success
     execution_executed = False
-    guild = self.bot.get_guild(self.bot.config['server_id'])
+    guild = self.bot.guild
     kick_list = await self.get_all_visarole_members(guild)
     spam_channel = await self.get_spam_channel()
     for member in kick_list:

@@ -11,6 +11,8 @@ from discord.ext.commands import Bot, Context
 import datetime
 from discord.user import ClientUser
 from typing import Union
+from discord.guild import Guild
+from typing import Optional
 
 from helpers import checks
 import discord
@@ -26,7 +28,7 @@ def fetch_guild(func):
     if fetched_guild := kwargs.get("fetched_guild"):
       if fetched_guild is None:
         self: VisaCog = args[0]
-        kwargs["fetched_guild"] = await self.get_guild()
+        kwargs["fetched_guild"] = self.guild
     result = await func(*args, **kwargs)
     return result
 
@@ -58,21 +60,19 @@ class GuildedCog(commands.Cog):
     # manually import this just cause not in config i guess
     self.test_mode = bot.config['test_mode']
     self.warning_gif = MEDIA_PATH / "warning_gifs" / "visabot_is_watching_you.gif"
-    self.server_id = self.bot.get_guild(self.bot.config['server_id'])
-
-  async def get_guild(self) -> discord.Guild:
-    guild = await self.bot.fetch_guild(self.bot.config['server_id'])
-    return guild
+    self.server_id = self.bot.fetch_guild(self.bot.config['server_id'])
+    # this is currently defined in the visa bot but we may waant to move some stuff to another place
+    self.guild: Optional[Guild] = None
 
   # uses config to determine guild
   async def get_spam_channel(self, fetched_guild=None) -> discord.TextChannel:
     if fetched_guild is None:
-      fetched_guild = await self.get_guild()
+      fetched_guild = self.guild
     return await fetched_guild.fetch_channel(self.bot.config["spam_channel"])
 
   async def report_error(self, fetched_guild=None):
     if fetched_guild is None:
-      fetched_guild = await self.get_guild()
+      fetched_guild = self.guild
     dev_at = self.get_at(await fetched_guild.fetch_member(self.bot.config['dev_id']))
     spam_channel = await self.get_spam_channel()
     await spam_channel.send(
@@ -82,7 +82,7 @@ class GuildedCog(commands.Cog):
   async def get_bot_status_channel(self,
                                    fetched_guild=None) -> discord.TextChannel:
     if fetched_guild is None:
-      fetched_guild = await self.get_guild()
+      fetched_guild = self.guild
     return await fetched_guild.fetch_channel(
       self.bot.config['bot_status_channel'])
 
@@ -109,7 +109,7 @@ class GuildedCog(commands.Cog):
   async def user_to_member(self, user, fetched_guild=None):
     # method to get member from either id or from user object
     if fetched_guild is None:
-      fetched_guild = await self.get_guild()
+      fetched_guild = self.guild
     if isinstance(user, int):
       return await fetched_guild.fetch_member(user)
     if isinstance(user, discord.User):
@@ -128,7 +128,7 @@ class GuildedCog(commands.Cog):
                                         fetched_guild=None
                                         ) :
     if fetched_guild is None:
-      fetched_guild = await self.get_guild()
+      fetched_guild = self.guild
     split = name.split("#")
     name = split[0]
     discriminator = split[1]
@@ -178,7 +178,6 @@ class GuildedCog(commands.Cog):
     embed = discord.Embed(description=message, color=0x9C84EF)
     await context.send(embed=embed)
 
-
 class VisaCog(GuildedCog):
 
   def __init__(self, bot: Bot):
@@ -191,20 +190,20 @@ class VisaCog(GuildedCog):
 
   async def get_visa_role(self, fetched_guild=None) -> discord.Role:
     if fetched_guild is None:
-      fetched_guild = await self.get_guild()
+      fetched_guild = self.guild
     visarole = discord.utils.get(fetched_guild.roles, name=self.role_name)
     return visarole
 
   @fetch_guild
   async def has_visa(self, member: discord.Member, fetched_guild=None) -> bool:
     # if fetched_guild is None:
-    #   fetched_guild = await self.get_guild()
+    #   fetched_guild = self.guild
     visarole = await self.get_visa_role(fetched_guild)
     return visarole in member.roles
 
   async def get_all_visarole_members(self, fetched_guild=None):
     if fetched_guild is None:
-      fetched_guild = await self.get_guild()
+      fetched_guild = self.guild
     visarole_members = []
     async for member in fetched_guild.fetch_members(limit=None):
       if await self.has_visa(member):
@@ -213,6 +212,6 @@ class VisaCog(GuildedCog):
 
   async def get_visa_total(self, fetched_guild=None) -> int:
     if fetched_guild is None:
-      fetched_guild = await self.get_guild()
+      fetched_guild = self.guild
     total = len(await self.get_all_visarole_members(fetched_guild))
     return total

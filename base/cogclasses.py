@@ -173,18 +173,6 @@ class VisaCog(GuildedCog):
       self.visa_length = datetime.timedelta(days=7)
     self.role_name = "Visa"
 
-  async def get_visa_role(self, fetched_guild=None) -> discord.Role:
-    if fetched_guild is None:
-      fetched_guild = self.guild
-    visarole = discord.utils.get(fetched_guild.roles, name=self.role_name)
-    return visarole
-
-  async def has_visa(self, member: discord.Member, fetched_guild=None) -> bool:
-    if fetched_guild is None:
-      fetched_guild = self.guild
-    visarole = await self.get_visa_role(fetched_guild)
-    return visarole in member.roles
-
   async def get_all_visarole_members(self, fetched_guild=None):
     if fetched_guild is None:
       fetched_guild = self.guild

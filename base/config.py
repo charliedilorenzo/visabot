@@ -58,3 +58,6 @@ def load_env():
     config_dict["server"] = int(config_dict.pop("server"))
     config = Config(**config_dict)
     return config
+
+
+CONFIG = load_env()

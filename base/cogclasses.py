@@ -9,10 +9,12 @@ Version: 5.5.0
 from discord.ext import commands
 from discord.ext.commands import Bot, Context
 import datetime
-from discord.user import ClientUser
+from discord import ClientUser
 from typing import Union
-from discord.guild import Guild
+from discord import Guild
+from discord import Member
 from typing import Optional
+from discord import User
 from base.config import ConfigedBot, Config
 
 from helpers import checks
@@ -71,14 +73,13 @@ class GuildedCog(commands.Cog):
       fetched_guild = self.guild
     return await fetched_guild.fetch_channel(self.bot.config.bot_status_channel)
 
-  def correct_guild_check(self, guild: discord.Guild):
+  def is_correct_guild_check(self, guild: discord.Guild) -> bool:
     # expects guild id: int or guild: discord.guild
     if isinstance(guild, discord.Guild):
       guild = guild.id
     return guild == self.bot.config.server
 
-  async def wrong_guild_message(self, channel: discord.TextChannel,
-                                context):
+  async def wrong_guild_message(self, channel: discord.TextChannel, context):
     message = "Visabot is not currently monitoring this server"
     embed = discord.Embed(description=f"{message}", color=0x9C84EF)
     embed.set_footer(text=f"Just trying to get some sleep in...")
@@ -87,18 +88,11 @@ class GuildedCog(commands.Cog):
     else:
       await context.reply(embed=embed)
 
-  def get_last_around(self) -> datetime.datetime:
-    # raise NotImplementedError("Not getting last around rn")
-    print("SKIPPING LAST AROUND")
-
-  async def user_to_member(self, user, fetched_guild=None):
-    # method to get member from either id or from user object
-    if fetched_guild is None:
-      fetched_guild = self.guild
+  async def user_to_member(self, user: User):
     if isinstance(user, int):
-      return await fetched_guild.fetch_member(user)
+      return await self.guild.fetch_member(user)
     if isinstance(user, discord.User):
-      return await fetched_guild.fetch_member(user.id)
+      return await self.guild.fetch_member(user.id)
 
   def get_nick_or_name(self, member: discord.Member) -> str:
     nickname = member.nick
@@ -108,16 +102,11 @@ class GuildedCog(commands.Cog):
     at_member = "<@" + str(member.id) + ">"
     return at_member
 
-  async def namediscriminator_to_member(self,
-                                        name: str,
-                                        fetched_guild=None
-                                        ) :
-    if fetched_guild is None:
-      fetched_guild = self.guild
+  async def namediscriminator_to_member(self, name: str):
     split = name.split("#")
     name = split[0]
     discriminator = split[1]
-    member = fetched_guild.get_member_named(name, discriminator)
+    member = self.guild.get_member_named(name, discriminator)
     return member
 
   @commands.hybrid_command(
@@ -187,3 +176,11 @@ class VisaCog(GuildedCog):
       fetched_guild = self.guild
     total = len(await self.get_all_visarole_members(fetched_guild))
     return total
+  
+  async def get_visa_role(self) -> discord.Role:
+    visarole: discord.Role = discord.utils.get(self.guild.roles, name=self.role_name)
+    return visarole
+
+  async def has_visa(self, member: Member) -> bool:
+      visarole = await self.get_visa_role()
+      return visarole in member.roles

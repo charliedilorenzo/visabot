@@ -1,14 +1,18 @@
 
-- use fetch guild decorator
 - add dev_id for message stuff dev_id (search for the files that have it)
 - move stuff that is main out to better places (espeically todos)
 - investigate and this more deeply about which classes should have which functions (cause they be kinda jumbled)
 - readjust @ stuff after name discrimator and nick name and all that has been changed
+- use fetch guild decorator
 
 - Figure out how to replace that with SQL database
 - go back and rereference cu4rrent env to figure out what is actually needed
 
+- talk cog for reactions to text being typed in various channels
 
 - funny reaction if asking for my visa
 
 - Figure out how to make a testbed for this
+
+
+- make another cog with some kind of polls function?

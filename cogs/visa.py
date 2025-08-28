@@ -21,6 +21,7 @@ import random
 from base.cogclasses import VisaCog
 from pathlib import Path
 import datetime
+from base.config import ConfigedBot
 
 MEDIA = Path(__file__).parent.parent / "media"
 
@@ -29,12 +30,12 @@ MEDIA = Path(__file__).parent.parent / "media"
 # TODO make another cog with some kind of polls function?
 class Visabot(VisaCog, name="visabot"):
 
-  def __init__(self, bot: Bot):
+  def __init__(self, bot: ConfigedBot):
     super().__init__(bot)
     self.visabot: ClientUser
 
   def get_help_blurb(self, embed: discord.Embed) -> str:
-    prefix = self.bot.config['prefix']
+    prefix = self.bot.config.command_prefix
     commands_list = self.get_commands()
     # pretty much manual cause im lazy
     data = []
@@ -113,53 +114,54 @@ class Visabot(VisaCog, name="visabot"):
 
     :param context: The hybrid command context.
     """
-    if not self.correct_guild_check(context.guild):
-      return
-    member = ""
-    message = context.message
-    if message.content == "!visa":
-      member = await self.user_to_member(context.author.id, context.guild)
-    elif "@" in message.content:
-      # this will error if anything other than a properly formatted user id is after the at and in between the "<" and ">"
-      start = message.content.index("<") + 2
-      end = message.content.index(">")
-      id = int(message.content[start:end])
-      member = await context.guild.fetch_member(id)
-    else:
-      # only looking for name # discriminator
-      start = message.content.index(" ") + 1
-      after_visa_content = message.content[start:len(message.content)]
-      found = False
-      async for member in context.guild.fetch_members(limit=None):
-        name = member.name + "#" + member.discriminator
-        if after_visa_content == name:
-          found = True
-          # member is assigned properly
-          break
-      if not found:
-        embed = discord.Embed(
-          description=
-          f"Member {after_visa_content} not found. Make sure you have the correct \"name#discriminator\" combination.",
-          color=0x9C84EF)
-        await context.send(embed=embed)
-        return
+    return
+    # if not self.correct_guild_check(context.guild):
+    #   return
+    # member = ""
+    # message = context.message
+    # if message.content == "!visa":
+    #   member = await self.user_to_member(context.author.id, context.guild)
+    # elif "@" in message.content:
+    #   # this will error if anything other than a properly formatted user id is after the at and in between the "<" and ">"
+    #   start = message.content.index("<") + 2
+    #   end = message.content.index(">")
+    #   id = int(message.content[start:end])
+    #   member = await context.guild.fetch_member(id)
+    # else:
+    #   # only looking for name # discriminator
+    #   start = message.content.index(" ") + 1
+    #   after_visa_content = message.content[start:len(message.content)]
+    #   found = False
+    #   async for member in context.guild.fetch_members(limit=None):
+    #     name = member.name + "#" + member.discriminator
+    #     if after_visa_content == name:
+    #       found = True
+    #       # member is assigned properly
+    #       break
+    #   if not found:
+    #     embed = discord.Embed(
+    #       description=
+    #       f"Member {after_visa_content} not found. Make sure you have the correct \"name#discriminator\" combination.",
+    #       color=0x9C84EF)
+    #     await context.send(embed=embed)
+    #     return
 
-    if member != "":
-      message = await self.visa_status_message([member], context.channel,
-                                               context.guild)
-      embed = discord.Embed(description=f"{message}", color=0x9C84EF)
-      total = len((await self.get_visa_role(context.guild)).members)
-      embed.set_footer(
-        text=
-        f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'member'} with the Visa role."
-      )
-      await context.send(embed=embed)
-    elif context.invoked_subcommand is None:
-      embed = discord.Embed(
-        description=
-        "You need to specify a subcommand.\n\n**Subcommands:**\n`add` - Add a user to the blacklist.\n`remove` - Remove a user from the blacklist.",
-        color=0xE02B2B)
-      await context.send(embed=embed)
+    # if member != "":
+    #   message = await self.visa_status_message([member], context.channel,
+    #                                            context.guild)
+    #   embed = discord.Embed(description=f"{message}", color=0x9C84EF)
+    #   total = len((await self.get_visa_role(context.guild)).members)
+    #   embed.set_footer(
+    #     text=
+    #     f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'member'} with the Visa role."
+    #   )
+    #   await context.send(embed=embed)
+    # elif context.invoked_subcommand is None:
+    #   embed = discord.Embed(
+    #     description=
+    #     "You need to specify a subcommand.\n\n**Subcommands:**\n`add` - Add a user to the blacklist.\n`remove` - Remove a user from the blacklist.",
+    #     color=0xE02B2B)
+    #   await context.send(embed=embed)
 
   @visa.command(
     base="visa",
@@ -169,10 +171,10 @@ class Visabot(VisaCog, name="visabot"):
   @checks.not_blacklisted()
   async def visa_all(self, context: Context) -> None:
     """
-        Lists all members with the visa role and calculates their remaining duration
+    Lists all members with the visa role and calculates their remaining duration
 
-        :param context: The hybrid command context.
-        """
+    :param context: The hybrid command context.
+    """
     if not self.correct_guild_check(context.guild):
       return
     visa_members = await self.get_all_visarole_members(context.guild)
@@ -319,7 +321,7 @@ class Visabot(VisaCog, name="visabot"):
     if message.content.lower() in delete_me_messages:
       await self.send_random_delete_gif(message.channel)
     elif (self.get_at(self.visabot)) in message.content:
-      if (message.author.id == self.bot.config['dev_id']):
+      if self.bot.config.dev_id and message.author.id == self.bot.config.dev_id:
         await message.channel.send('kashikomarimashita Charlie-sama ')
         return
       await message.channel.send(f'You called {self.get_nick_or_name(message.author)}?')
@@ -359,8 +361,8 @@ class Visabot(VisaCog, name="visabot"):
 
   @commands.Cog.listener()
   async def on_ready(self):
-    self.guild = await self.bot.fetch_guild(self.bot.config['server_id'])
-    print(f"Using guild {self.guild}")
+    self.guild = await self.bot.fetch_guild(self.bot.config.server)
+    print(f"Using guild '{self.guild}'")
     self.visabot = self.bot.user
     print(f"Visabot is {self.visabot}")
     success = await self.add_visa_after_offline()

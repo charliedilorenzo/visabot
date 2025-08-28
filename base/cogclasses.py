@@ -13,13 +13,10 @@ from discord.user import ClientUser
 from typing import Union
 from discord.guild import Guild
 from typing import Optional
+from base.config import ConfigedBot, Config
 
 from helpers import checks
 import discord
-import os
-import json
-from typing import TypedDict
-from pathlib import Path
 from base import MEDIA_PATH
 
 
@@ -33,16 +30,6 @@ def fetch_guild(func):
     return result
 
   return _wrapper
-
-
-class Config(TypedDict):
-  test_mode: True
-  token: str
-  server_id: str
-  spam_channel: str
-
-class ConfigedBot(Bot):
-  config: Config
 
 class GuildedCog(commands.Cog):
 
@@ -58,9 +45,8 @@ class GuildedCog(commands.Cog):
   def __init__(self, bot: ConfigedBot):
     self.bot = bot
     # manually import this just cause not in config i guess
-    self.test_mode = bot.config['test_mode']
+    self.test_mode = bot.config.test_mode
     self.warning_gif = MEDIA_PATH / "warning_gifs" / "visabot_is_watching_you.gif"
-    self.server_id = self.bot.fetch_guild(self.bot.config['server_id'])
     # this is currently defined in the visa bot but we may waant to move some stuff to another place
     self.guild: Optional[Guild] = None
 
@@ -68,29 +54,28 @@ class GuildedCog(commands.Cog):
   async def get_spam_channel(self, fetched_guild=None) -> discord.TextChannel:
     if fetched_guild is None:
       fetched_guild = self.guild
-    return await fetched_guild.fetch_channel(self.bot.config["spam_channel"])
+    return await fetched_guild.fetch_channel(self.bot.config.spam_channel)
 
   async def report_error(self, fetched_guild=None):
     if fetched_guild is None:
       fetched_guild = self.guild
-    dev_at = self.get_at(await fetched_guild.fetch_member(self.bot.config['dev_id']))
-    spam_channel = await self.get_spam_channel()
-    await spam_channel.send(
-      'Visabot has error - {} get on and fix it you dummy'.format(dev_at))
+    if self.bot.config.dev_id:
+      dev_at = self.get_at(await fetched_guild.fetch_member(self.bot.config.dev_id))
+      spam_channel = await self.get_spam_channel()
+      await spam_channel.send(f'Visabot has error - {dev_at} get on and fix it you dummy.')
 
   # uses config to determine guild
   async def get_bot_status_channel(self,
                                    fetched_guild=None) -> discord.TextChannel:
     if fetched_guild is None:
       fetched_guild = self.guild
-    return await fetched_guild.fetch_channel(
-      self.bot.config['bot_status_channel'])
+    return await fetched_guild.fetch_channel(self.bot.config.bot_status_channel)
 
   def correct_guild_check(self, guild: discord.Guild):
     # expects guild id: int or guild: discord.guild
     if isinstance(guild, discord.Guild):
       guild = guild.id
-    return guild == self.bot.config['server_id']
+    return guild == self.bot.config.server
 
   async def wrong_guild_message(self, channel: discord.TextChannel,
                                 context):
@@ -150,7 +135,7 @@ class GuildedCog(commands.Cog):
     """
     # TODO this should be stored with database
     raise NotImplementedError("This is currently no longer implemented")
-    self.bot.config['spam_channel'] = channel.id
+    self.bot.config.spam_channel = channel.id
     message = "The bot's spam channel has been updated to: {}".format(
       channel.name)
     embed = discord.Embed(description=message, color=0x9C84EF)
@@ -171,7 +156,7 @@ class GuildedCog(commands.Cog):
     """
     # TODO this should be stored with database
     raise NotImplementedError("This is currently no longer implemented")
-    self.bot.config['bot_status_channel'] = channel.id
+    self.bot.config.bot_status_channel = channel.id
 
     message = "The bot's status channel has been updated to: {}".format(
       channel.name)
@@ -182,7 +167,7 @@ class VisaCog(GuildedCog):
 
   def __init__(self, bot: Bot):
     super().__init__(bot)
-    if self.bot.config['test_mode'] == True:
+    if self.bot.config.test_mode == True:
       self.visa_length = datetime.timedelta(minutes=1)
     else:
       self.visa_length = datetime.timedelta(days=7)
@@ -194,10 +179,9 @@ class VisaCog(GuildedCog):
     visarole = discord.utils.get(fetched_guild.roles, name=self.role_name)
     return visarole
 
-  @fetch_guild
   async def has_visa(self, member: discord.Member, fetched_guild=None) -> bool:
-    # if fetched_guild is None:
-    #   fetched_guild = self.guild
+    if fetched_guild is None:
+      fetched_guild = self.guild
     visarole = await self.get_visa_role(fetched_guild)
     return visarole in member.roles
 

@@ -11,23 +11,23 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 from helpers import checks
-
+from base.cogclasses import ConfigedBot
 
 class General(commands.Cog, name="general"):
 
-  def __init__(self, bot):
+  def __init__(self, bot: ConfigedBot):
     self.bot = bot
 
   @commands.hybrid_command(name="help",
                            description="List all commands the bot has loaded.")
   @checks.not_blacklisted()
   async def help(self, context: Context) -> None:
-    prefix = self.bot.config["prefix"]
+    prefix = self.bot.config.command_prefix
     embed = discord.Embed(title="Help",
                           description="List of available commands:",
                           color=0x9C84EF)
     # just to make it easier for me to remember there is owner help command
-    if context.author.id == self.bot.config['dev_id']:
+    if context.author.id == self.bot.config.dev_id:
       cog = self.bot.get_cog('owner'.lower())
       commands = cog.get_commands()
       for command in commands:
@@ -81,7 +81,7 @@ class General(commands.Cog, name="general"):
     embed.add_field(
       name="Prefix:",
       value=
-      f"/ (Slash Commands) or {self.bot.config['prefix']} for normal commands",
+      f"/ (Slash Commands) or {self.bot.config.command_prefix} for normal commands",
       inline=False)
     embed.set_footer(text=f"Requested by {context.author}")
     await context.send(embed=embed)

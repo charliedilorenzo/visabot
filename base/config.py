@@ -29,7 +29,7 @@ class Config:
     server: int
     spam_channel: str
     bot_status_channel: str
-    dev_id: Optional[str] = None
+    dev_id: Optional[int] = None
     command_prefix: str = "visabot"
     sync_commands_globally: bool = False
 
@@ -56,6 +56,8 @@ def load_env():
         sys.exit(1)
     config_dict["test_mode"] = strtobool(config_dict.pop("test_mode", True)) == 1
     config_dict["server"] = int(config_dict.pop("server"))
+    if config_dict.get("dev_id"):
+        config_dict["dev_id"] = int(config_dict.pop("dev_id"))
     config = Config(**config_dict)
     return config
 

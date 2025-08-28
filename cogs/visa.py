@@ -77,7 +77,7 @@ class Visabot(VisaCog, name="visabot"):
         non_permanent_detected = False
         for member in members:
             time_left_val = self.time_left_value_seconds(member)
-            if await self.has_visa(member, fetched_guild):
+            if await self.has_visa(member):
                 non_permanent_detected = True
                 message += f"{self.get_nick_or_name(member)} has {self.time_left_message(member)}\n"
                 if time_left_val < self.visa_length:
@@ -169,14 +169,13 @@ class Visabot(VisaCog, name="visabot"):
         description="Shows all Visa members and their durations.",
     )
     @checks.not_blacklisted()
+    @checks.is_correct_guild()
     async def visa_all(self, context: Context) -> None:
         """
         Lists all members with the visa role and calculates their remaining duration
 
         :param context: The hybrid command context.
         """
-        if not self.is_correct_guild_check(context.guild):
-            return
         visa_members = await self.get_all_visarole_members(context.guild)
         if len(visa_members) == 0:
             message = (

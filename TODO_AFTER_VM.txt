@@ -1,4 +1,7 @@
 
+- change a bunch of the returns to send some error content
+    - create some function that will generate this
+    - figure out if there is a function that will catch errors
 - add dev_id for message stuff dev_id (search for the files that have it)
 - move stuff that is main out to better places (espeically todos)
 - investigate and this more deeply about which classes should have which functions (cause they be kinda jumbled)

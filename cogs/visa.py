@@ -83,11 +83,7 @@ class Visabot(VisaCog, name="visabot"):
                 if time_left_val < self.visa_length:
                     extra_warning = True
             else:
-                message += (
-                    "{} is considered a permanent member of the server.\n".format(
-                        self.get_nick_or_name(member)
-                    )
-                )
+                message += f"{self.get_nick_or_name(member)} is considered a permanent member of the server.\n"
         if extra_warning:
             with open(self.warning_gif, "rb") as f:
                 picture = discord.File(f)
@@ -284,7 +280,7 @@ class Visabot(VisaCog, name="visabot"):
         name = self.get_at(member)
         warning_message = f"{name} has been given a visa. \n You have {self.time_left_message(member)}."
         spam_channel = await self.get_spam_channel()
-        await spam_channel.send("{}".format(name))
+        await spam_channel.send(name)
         embed = discord.Embed(description=f"{warning_message}")
         total = await self.get_visa_total()
         embed.set_footer(
@@ -339,9 +335,8 @@ class Visabot(VisaCog, name="visabot"):
         #   if not (await self.has_visa(member, guild)):
         #     name = self.get_at(member)
         #     await member.add_roles(visarole)
-        #     await spam_channel.send("{}".format(name))
-        #     warning_message = ("{} has been given a visa. \n You have {}.").format(
-        #       name, self.time_left_message(member))
+        #     await spam_channel.send(name)
+        #     warning_message = f"{name} has been given a visa. \n You have {self.time_left_message(member)}.")
         #     embed = discord.Embed(description=f"{warning_message}")
         #     total = await self.get_visa_total()
         #     embed.set_footer(
@@ -393,32 +388,26 @@ class Visabot(VisaCog, name="visabot"):
         spam_channel = await self.get_spam_channel()
 
         # the message and result on true error
-        message = "An error has occured: likely {} that visabot attempted to kick is still on the server.".format(
-            name
-        )
+        message = f"An error has occured: likely {name} who visabot attempted to kick is still on the server."
         result = [False, False]
         try:
             await guild.kick(member)
             refetch_member = await guild.fetch_member(member.id)
             # here is a success since we cannot find the member they have been properly kicked from the server
         except discord.NotFound:
-            message = "{}'s visa has expired. They have been kicked.".format(name)
+            message = f"{name}'s visa has expired. They have been kicked."
             result = [True, True]
             # visabot attempted to kick someone with higher perms, that is probably not an error in visabot
         except discord.Forbidden:
-            message = "{} has a higher role and does not need a visa.\n".format(name)
+            message = f"{name} has a higher role and does not need a visa.\n"
             await member.remove_roles(visarole)
             refetch_member = await guild.fetch_member(member.id)
             # check if we added visa role
             if await self.has_visa(refetch_member, guild):
-                message += "An error has occured where a permanent member of the server, {}, has retained their visa role after attempted of removal of visa role".format(
-                    name
-                )
+                message += f"An error has occured where a permanent member of the server, {name}, has retained their visa role after attempted of removal of visa role"
                 result = [False, False]
             else:
-                message += "Visa has been removed from {}. You are considered a permanent member of the server".format(
-                    name
-                )
+                message += f"Visa has been removed from {name}. You are considered a permanent member of the server"
                 result = [True, False]
 
         embed = discord.Embed(description=f"{message}", color=0x9C84EF)

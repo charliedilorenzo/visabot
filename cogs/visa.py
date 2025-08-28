@@ -108,6 +108,7 @@ class Visabot(VisaCog, name="visabot"):
         description="Get information about visa duration/status:     !visa, !visa all, !visa <@another>, !visa another#1234",
     )
     @checks.not_blacklisted()
+    @checks.is_correct_guild()
     async def visa(self, context: Context):
         """
         Lets you add or remove a user from not being able to use the bot.
@@ -200,14 +201,13 @@ class Visabot(VisaCog, name="visabot"):
         description="Gives author's visa duration/status.",
     )
     @checks.not_blacklisted()
+    @checks.is_correct_guild()
     async def visa_self(self, context: Context) -> None:
         """
         If the member has a Visa role their visa duration is given. If they are not a visa member, states they are not.
 
         :param context: The hybrid command context.
         """
-        if not self.is_correct_guild_check(context.guild):
-            return
         member = await self.user_to_member(context.author.id)
         message = await self.visa_status_message(
             [member], context.channel, context.guild
@@ -222,14 +222,13 @@ class Visabot(VisaCog, name="visabot"):
         description="Gives the visa duration/status of another.",
     )
     @checks.not_blacklisted()
+    @checks.is_correct_guild()
     async def visa_other(self, context: Context, user: discord.User) -> None:
         """
         If the member has a Visa role their visa duration is given. If they are not a visa member, states they are not.
 
         :param context: The hybrid command context.
         """
-        if not self.is_correct_guild_check(context.guild):
-            return
         member = await self.user_to_member(user)
         message = await self.visa_status_message(
             [member], context.channel, context.guild
@@ -248,6 +247,7 @@ class Visabot(VisaCog, name="visabot"):
         description="Gives the default inital visa timer.",
     )
     @checks.not_blacklisted()
+    @checks.is_correct_guild()
     async def visa_timer(self, context: Context) -> None:
         """
         Gives it in days, hours, minutes, seconds
@@ -268,6 +268,7 @@ class Visabot(VisaCog, name="visabot"):
         name="kickgif", description="Sends a random autokick gif to the channel."
     )
     @checks.not_blacklisted()
+    @checks.is_correct_guild()
     async def kickgif(self, context: Context) -> None:
         await self.send_random_delete_gif(context.channel)
 
@@ -468,9 +469,5 @@ class Visabot(VisaCog, name="visabot"):
 
 
 # And then we finally add the cog to the bot so that it can load, unload, reload and use it's content.
-async def setup(bot):
-    await bot.add_cog(Visabot(bot))
-
-
 async def setup(bot):
     await bot.add_cog(Visabot(bot))

@@ -73,15 +73,14 @@ class Visabot(VisaCog, name="visabot"):
                                 fetched_guild=None) -> bool:
     if fetched_guild == None:
       fetched_guild = self.guild
-    extra_warning = False
     message = ""
+    extra_warning = False
     non_permanent_detected = False
     for member in members:
       time_left_val = self.time_left_value_seconds(member)
       if await self.has_visa(member, fetched_guild):
         non_permanent_detected = True
-        message += "{} has {} \n".format(self.get_nick_or_name(member),
-                                         self.time_left_message(member))
+        message += f"{self.get_nick_or_name(member)} has {self.time_left_message(member)}\n"
         if time_left_val < self.visa_length:
           extra_warning = True
       else:
@@ -201,10 +200,10 @@ class Visabot(VisaCog, name="visabot"):
   @checks.not_blacklisted()
   async def visa_self(self, context: Context) -> None:
     """
-        If the member has a Visa role their visa duration is given. If they are not a visa member, states they are not.
+    If the member has a Visa role their visa duration is given. If they are not a visa member, states they are not.
 
-        :param context: The hybrid command context.
-        """
+    :param context: The hybrid command context.
+    """
     if not self.correct_guild_check(context.guild):
       return
     member = await self.user_to_member(context.author.id, context.guild)
@@ -212,10 +211,6 @@ class Visabot(VisaCog, name="visabot"):
                                              context.guild)
     embed = discord.Embed(description=f"{message}", color=0x9C84EF)
     total = len((await self.get_visa_role(context.guild)).members)
-    embed.set_footer(
-      text=
-      f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'members'} with the Visa role."
-    )
     await context.send(embed=embed)
 
   @visa.command(
@@ -226,10 +221,10 @@ class Visabot(VisaCog, name="visabot"):
   @checks.not_blacklisted()
   async def visa_other(self, context: Context, user: discord.User) -> None:
     """
-        If the member has a Visa role their visa duration is given. If they are not a visa member, states they are not.
+    If the member has a Visa role their visa duration is given. If they are not a visa member, states they are not.
 
-        :param context: The hybrid command context.
-        """
+    :param context: The hybrid command context.
+    """
     if not self.correct_guild_check(context.guild):
       return
     member = await self.user_to_member(user, context.guild)
@@ -251,24 +246,12 @@ class Visabot(VisaCog, name="visabot"):
   @checks.not_blacklisted()
   async def visa_timer(self, context: Context) -> None:
     """
-        Gives it in days, hours, minutes, seconds
+    Gives it in days, hours, minutes, seconds
 
-        :param context: The hybrid command context.
-        """
-    visa_time = self.visa_length
-    seconds = visa_time % 60
-    visa_time = math.floor(visa_time / 60)
-    minutes = visa_time % 60
-    visa_time = math.floor(visa_time / 60)
-    hours = visa_time % 60
-    visa_time = math.floor(visa_time / 60)
-    days = visa_time % 60
-    visa_time = math.floor(visa_time / 60)
-
-    timer_message = "{} Days, {} Hours, {} Minutes, {} Seconds".format(
-      days, hours, minutes, seconds)
+    :param context: The hybrid command context.
+    """
     embed = discord.Embed(
-      description=f"The timer is currently set to: {timer_message}",
+      description=f"The timer is currently set to: {self.visa_length}",
       color=0x9C84EF)
     total = len((await self.get_visa_role(context.guild)).members)
     embed.set_footer(

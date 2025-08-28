@@ -10,7 +10,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from base.cogclasses import ConfigedBot
+from base.guildedcog import ConfigedBot
 from helpers import checks
 
 
@@ -146,5 +146,4 @@ class General(commands.Cog, name="general"):
 
 
 async def setup(bot):
-    await bot.add_cog(General(bot))
     await bot.add_cog(General(bot))

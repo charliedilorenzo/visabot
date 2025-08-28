@@ -10,25 +10,13 @@ import datetime
 from typing import Optional, Union
 
 import discord
-from discord import ClientUser, Guild, Member, User
+from discord import ClientUser, Guild, User
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
+from discord.ext.commands import Context
 
 from base import MEDIA_PATH
-from base.config import Config, ConfigedBot
+from base.config import ConfigedBot
 from helpers import checks
-
-
-def fetch_guild(func):
-    async def _wrapper(*args, **kwargs):
-        if fetched_guild := kwargs.get("fetched_guild"):
-            if fetched_guild is None:
-                self: VisaCog = args[0]
-                kwargs["fetched_guild"] = self.guild
-        result = await func(*args, **kwargs)
-        return result
-
-    return _wrapper
 
 
 class GuildedCog(commands.Cog):
@@ -152,39 +140,4 @@ class GuildedCog(commands.Cog):
         message = f"The bot's status channel has been updated to: '{channel.name}'"
         embed = discord.Embed(description=message, color=0x9C84EF)
         await context.send(embed=embed)
-
-
-class VisaCog(GuildedCog):
-
-    def __init__(self, bot: Bot):
-        super().__init__(bot)
-        if self.bot.config.test_mode == True:
-            self.visa_length = datetime.timedelta(minutes=1)
-        else:
-            self.visa_length = datetime.timedelta(days=7)
-        self.role_name = "Visa"
-
-    async def get_all_visarole_members(self, fetched_guild=None):
-        if fetched_guild is None:
-            fetched_guild = self.guild
-        visarole_members = []
-        async for member in fetched_guild.fetch_members(limit=None):
-            if await self.has_visa(member):
-                visarole_members.append(member)
-        return visarole_members
-
-    async def get_visa_total(self, fetched_guild=None) -> int:
-        if fetched_guild is None:
-            fetched_guild = self.guild
-        total = len(await self.get_all_visarole_members(fetched_guild))
-        return total
-
-    async def get_visa_role(self) -> discord.Role:
-        visarole: discord.Role = discord.utils.get(
-            self.guild.roles, name=self.role_name
-        )
-        return visarole
-
-    async def has_visa(self, member: Member) -> bool:
-        visarole = await self.get_visa_role()
-        return visarole in member.roles
+        await context.send(embed=embed)

@@ -26,13 +26,20 @@ from base.config import ConfigedBot
 MEDIA = Path(__file__).parent.parent / "media"
 
 # TODO add last offline to db or somethings
-# Here we name the cog and create a new class for the cog.
-# TODO make another cog with some kind of polls function?
 class Visabot(VisaCog, name="visabot"):
 
   def __init__(self, bot: ConfigedBot):
     super().__init__(bot)
     self.visabot: ClientUser
+
+  async def get_visa_role(self) -> discord.Role:
+    visarole: discord.Role = discord.utils.get(self.guild.roles, name=self.role_name)
+    return visarole
+
+  async def has_visa(self, member: Member) -> bool:
+      visarole = await self.get_visa_role()
+      return visarole in member.roles
+
 
   def get_help_blurb(self, embed: discord.Embed) -> str:
     prefix = self.bot.config.command_prefix
@@ -185,7 +192,7 @@ class Visabot(VisaCog, name="visabot"):
       message = await self.visa_status_message(visa_members, context.channel,
                                                context.guild)
       embed = discord.Embed(description=f"{message}", color=0x9C84EF)
-      total = len((await self.get_visa_role(context.guild)).members)
+      total = len((await self.get_visa_role()).members)
       embed.set_footer(
         text=
         f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'members'} with the Visa role."
@@ -210,7 +217,7 @@ class Visabot(VisaCog, name="visabot"):
     message = await self.visa_status_message([member], context.channel,
                                              context.guild)
     embed = discord.Embed(description=f"{message}", color=0x9C84EF)
-    total = len((await self.get_visa_role(context.guild)).members)
+    total = len((await self.get_visa_role()).members)
     await context.send(embed=embed)
 
   @visa.command(
@@ -231,7 +238,7 @@ class Visabot(VisaCog, name="visabot"):
     message = await self.visa_status_message([member], context.channel,
                                              context.guild)
     embed = discord.Embed(description=f"{message}", color=0x9C84EF)
-    total = len((await self.get_visa_role(context.guild)).members)
+    total = len((await self.get_visa_role()).members)
     embed.set_footer(
       text=
       f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'members'} with the Visa role."
@@ -253,7 +260,7 @@ class Visabot(VisaCog, name="visabot"):
     embed = discord.Embed(
       description=f"The timer is currently set to: {self.visa_length}",
       color=0x9C84EF)
-    total = len((await self.get_visa_role(context.guild)).members)
+    total = len((await self.get_visa_role()).members)
     embed.set_footer(
       text=
       f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'member'} with the Visa role."
@@ -273,7 +280,7 @@ class Visabot(VisaCog, name="visabot"):
       return
     member_id = member.id
     member = await guild.fetch_member(member_id)
-    visarole = await self.get_visa_role(guild)
+    visarole = await self.get_visa_role()
     await member.add_roles(visarole)
     name = self.get_at(member)
     warning_message = (f"{name} has been given a visa. \n You have {self.time_left_message(member)}.")
@@ -375,7 +382,7 @@ class Visabot(VisaCog, name="visabot"):
     if not self.correct_guild_check(guild):
       return
     name = self.get_at(member)
-    visarole = await self.get_visa_role(guild)
+    visarole = await self.get_visa_role()
     spam_channel = await self.get_spam_channel()
 
     # the message and result on true error

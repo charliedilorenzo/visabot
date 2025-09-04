@@ -1,10 +1,18 @@
 
-- change a bunch of the returns to send some error content
-    - create some function that will generate this
-    - figure out if there is a function that will catch errors
-- move stuff that is main out to better places (espeically todos)
+
+- Determine if GuildedCog can basically be made with preexisting elements
+  - like https://discordpy.readthedocs.io/en/stable/interactions/api.html#discord.app_commands.guild_only
+
+- error catching after a failing function will always send message in server
+  - like sending the preexisting error message one
+
 - investigate and this more deeply about which classes should have which functions (cause they be kinda jumbled)
-- readjust @ stuff after name discrimator and nick name and all that has been changed
+- check that guild works without fetched guild and is up to date even as a variable of the class
+  - probably replace with context otherwise
+- change a bunch of the returns to send some error content
+  - create some function that will generate this
+  - figure out if there is a function that will catch errors
+- move stuff that is main out to better places (espeically todos)
 - use fetch guild decorator
 
 - Figure out how to replace that with SQL database

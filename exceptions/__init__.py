@@ -1,4 +1,4 @@
-""""
+"""
 Copyright © Krypton 2019-2023 - https://github.com/kkrypt0nn (https://krypton.ninja)
 Description:
 🐍 A simple template to start to code your own and personalized discord bot in Python programming language.
@@ -25,5 +25,15 @@ class UserNotOwner(commands.CheckFailure):
     """
 
     def __init__(self, message="User is not an owner of the bot!"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class IncorrectGuild(commands.CheckFailure):
+    """
+    Thrown when a user attempts to run a command on a guild that the server is not monitering
+    """
+
+    def __init__(self, message="Command run in incorrect guild!"):
         self.message = message
         super().__init__(self.message)

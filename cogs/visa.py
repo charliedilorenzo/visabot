@@ -30,7 +30,6 @@ class Visabot(VisaCog, name="visabot"):
 
     def __init__(self, bot: ConfigedBot):
         super().__init__(bot)
-        self.visabot: ClientUser
 
     def get_help_blurb(self, embed: discord.Embed) -> str:
         prefix = self.bot.config.command_prefix
@@ -174,7 +173,7 @@ class Visabot(VisaCog, name="visabot"):
 
         :param context: The hybrid command context.
         """
-        visa_members = await self.get_all_visarole_members(context.guild)
+        visa_members = await self.get_all_visarole_members()
         if len(visa_members) == 0:
             message = (
                 "No one with a visa role has been found. You are all safe... for now..."
@@ -353,10 +352,7 @@ class Visabot(VisaCog, name="visabot"):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.guild = await self.bot.fetch_guild(self.bot.config.server)
-        print(f"Using guild '{self.guild}'")
-        self.visabot = self.bot.user
-        print(f"Visabot is {self.visabot}")
+        await self._assign_on_ready()
         success = await self.add_visa_after_offline()
         if not success:
             spam_channel = await self.get_spam_channel()

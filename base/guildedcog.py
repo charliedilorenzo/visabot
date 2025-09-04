@@ -11,7 +11,7 @@ from typing import Optional, Union
 import discord
 from discord import ClientUser, Guild, User
 from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext.commands import CommandError, Context
 
 from base import MEDIA_PATH
 from base.config import ConfigedBot
@@ -41,12 +41,10 @@ class GuildedCog(commands.Cog):
             f"Visabot has error - {dev_at} get on and fix it you dummy."
         )
 
-    # uses config to determine guild
     async def get_bot_status_channel(self) -> discord.TextChannel:
         return await self.guild.fetch_channel(self.bot.config.bot_status_channel)
 
     def is_correct_guild_check(self, guild: discord.Guild) -> bool:
-        # expects guild id: int or guild: discord.guild
         if isinstance(guild, discord.Guild):
             guild = guild.id
         return guild == self.bot.config.server
@@ -124,3 +122,9 @@ class GuildedCog(commands.Cog):
         embed = discord.Embed(description=message, color=0x9C84EF)
         await context.send(embed=embed)
         await context.send(embed=embed)
+
+    async def cog_command_error(self, ctx: Context, error: CommandError):
+        # TODO we may want to explode the server and save the logs here instead of proceeding cause it
+        # could get dicey
+        print()
+        await self.report_error()

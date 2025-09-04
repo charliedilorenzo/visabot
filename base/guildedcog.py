@@ -29,28 +29,21 @@ class GuildedCog(commands.Cog):
         self.guild: Optional[Guild] = None
 
     # uses config to determine guild
-    async def get_spam_channel(self, fetched_guild=None) -> discord.TextChannel:
-        if fetched_guild is None:
-            fetched_guild = self.guild
-        return await fetched_guild.fetch_channel(self.bot.config.spam_channel)
+    async def get_spam_channel(self) -> discord.TextChannel:
+        return await self.guild.fetch_channel(self.bot.config.spam_channel)
 
-    async def report_error(self, fetched_guild=None):
-        if fetched_guild is None:
-            fetched_guild = self.guild
-        if self.bot.config.dev_id:
-            dev_at = self.get_at(
-                await fetched_guild.fetch_member(self.bot.config.dev_id)
-            )
-            spam_channel = await self.get_spam_channel()
-            await spam_channel.send(
-                f"Visabot has error - {dev_at} get on and fix it you dummy."
-            )
+    async def report_error(self):
+        if not self.bot.config.dev_id:
+            return
+        dev_at = self.get_at(await self.guild.fetch_member(self.bot.config.dev_id))
+        spam_channel = await self.get_spam_channel()
+        await spam_channel.send(
+            f"Visabot has error - {dev_at} get on and fix it you dummy."
+        )
 
     # uses config to determine guild
-    async def get_bot_status_channel(self, fetched_guild=None) -> discord.TextChannel:
-        if fetched_guild is None:
-            fetched_guild = self.guild
-        return await fetched_guild.fetch_channel(self.bot.config.bot_status_channel)
+    async def get_bot_status_channel(self) -> discord.TextChannel:
+        return await self.guild.fetch_channel(self.bot.config.bot_status_channel)
 
     def is_correct_guild_check(self, guild: discord.Guild) -> bool:
         # expects guild id: int or guild: discord.guild

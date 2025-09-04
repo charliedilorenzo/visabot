@@ -17,19 +17,15 @@ class VisaCog(GuildedCog):
             self.visa_length = datetime.timedelta(days=7)
         self.role_name = "Visa"
 
-    async def get_all_visarole_members(self, fetched_guild=None):
-        if fetched_guild is None:
-            fetched_guild = self.guild
+    async def get_all_visarole_members(self):
         visarole_members = []
-        async for member in fetched_guild.fetch_members(limit=None):
+        async for member in self.guild.fetch_members(limit=None):
             if await self.has_visa(member):
                 visarole_members.append(member)
         return visarole_members
 
-    async def get_visa_total(self, fetched_guild=None) -> int:
-        if fetched_guild is None:
-            fetched_guild = self.guild
-        total = len(await self.get_all_visarole_members(fetched_guild))
+    async def get_visa_total(self) -> int:
+        total = len(await self.get_all_visarole_members())
         return total
 
     async def get_visa_role(self) -> discord.Role:
@@ -89,7 +85,7 @@ class VisaCog(GuildedCog):
         return success
         execution_executed = False
         guild = self.bot.guild
-        kick_list = await self.get_all_visarole_members(guild)
+        kick_list = await self.get_all_visarole_members()
         spam_channel = await self.get_spam_channel()
         for member in kick_list:
             if self.time_left_value_seconds(member) <= 0:

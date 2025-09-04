@@ -6,7 +6,6 @@ Description:
 Version: 5.5.0
 """
 
-import datetime
 from typing import Optional, Union
 
 import discord
@@ -20,15 +19,6 @@ from helpers import checks
 
 
 class GuildedCog(commands.Cog):
-
-    def get_now(self) -> datetime.datetime:
-        return datetime.datetime.now((datetime.timezone.utc))
-
-    def str_datetime_to_datetime_obj(self, str_datetime: str) -> datetime.datetime:
-        datetime_obj = datetime.datetime.strptime(
-            str_datetime, "%Y-%m-%d %H:%M:%S.%f%z"
-        )
-        return datetime_obj
 
     def __init__(self, bot: ConfigedBot):
         self.bot = bot

@@ -20,6 +20,7 @@ from discord.user import ClientUser
 from base.config import ConfigedBot
 from base.visacog import VisaCog
 from helpers import checks
+from helpers.time_helpers import get_now
 
 MEDIA = Path(__file__).parent.parent / "media"
 
@@ -58,7 +59,7 @@ class Visabot(VisaCog, name="visabot"):
         return embed
 
     def time_left_value_seconds(self, member: discord.Member) -> datetime.timedelta:
-        now = self.get_now()
+        now = get_now()
         joined = member.joined_at
         seconds_diff = datetime.timedelta(seconds=(now - joined).total_seconds())
         return max(self.visa_length - seconds_diff, datetime.timedelta(seconds=0))
@@ -387,7 +388,7 @@ class Visabot(VisaCog, name="visabot"):
             spam_channel = await self.get_spam_channel()
             await spam_channel.send("Purge has failed")
             await self.report_error()
-        now = self.get_now()
+        now = get_now()
 
     @purge_visas_background_task.before_loop
     async def before_purge_background_task(self):

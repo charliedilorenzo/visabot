@@ -107,58 +107,9 @@ class Visabot(VisaCog, name="visabot"):
     @checks.is_correct_guild()
     async def visa(self, context: Context):
         """
-        Lets you add or remove a user from not being able to use the bot.
-
-        :param context: The hybrid command context.
+        Hybrid command group for Visa commands
         """
         return
-        # if not self.is_correct_guild_check(context.guild):
-        #   return
-        # member = ""
-        # message = context.message
-        # if message.content == "!visa":
-        #   member = await self.user_to_member(context.author.id, context.guild)
-        # elif "@" in message.content:
-        #   # this will error if anything other than a properly formatted user id is after the at and in between the "<" and ">"
-        #   start = message.content.index("<") + 2
-        #   end = message.content.index(">")
-        #   id = int(message.content[start:end])
-        #   member = await context.guild.fetch_member(id)
-        # else:
-        #   # only looking for name # discriminator
-        #   start = message.content.index(" ") + 1
-        #   after_visa_content = message.content[start:len(message.content)]
-        #   found = False
-        #   async for member in context.guild.fetch_members(limit=None):
-        #     name = member.name + "#" + member.discriminator
-        #     if after_visa_content == name:
-        #       found = True
-        #       # member is assigned properly
-        #       break
-        #   if not found:
-        #     embed = discord.Embed(
-        #       description=
-        #       f"Member {after_visa_content} not found. Make sure you have the correct \"name#discriminator\" combination.",
-        #       color=0x9C84EF)
-        #     await context.send(embed=embed)
-        #     return
-
-        # if member != "":
-        #   message = await self.visa_status_message([member], context.channel,
-        #                                            context.guild)
-        #   embed = discord.Embed(description=f"{message}", color=0x9C84EF)
-        #   total = len((await self.get_visa_role(context.guild)).members)
-        #   embed.set_footer(
-        #     text=
-        #     f"There {'is' if total == 1 else 'are'} {total} {'member' if total == 1 else 'member'} with the Visa role."
-        #   )
-        #   await context.send(embed=embed)
-        # elif context.invoked_subcommand is None:
-        #   embed = discord.Embed(
-        #     description=
-        #     "You need to specify a subcommand.\n\n**Subcommands:**\n`add` - Add a user to the blacklist.\n`remove` - Remove a user from the blacklist.",
-        #     color=0xE02B2B)
-        #   await context.send(embed=embed)
 
     @visa.command(
         base="visa",
@@ -221,7 +172,7 @@ class Visabot(VisaCog, name="visabot"):
     @checks.is_correct_guild()
     async def visa_other(self, context: Context, user: discord.User) -> None:
         """
-        If the member has a Visa role their visa duration is given. If they are not a visa member, states they are not.
+        Check the visa duration on a specific user
 
         :param context: The hybrid command context.
         """

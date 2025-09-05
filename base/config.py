@@ -1,12 +1,11 @@
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from distutils.util import strtobool
-from inspect import Parameter, Signature, signature
+from logging import Logger
 from typing import Dict, Optional
 
 import dotenv
 from discord.ext.commands import Bot
-from pydantic import BaseModel
 
 EXPECTED_ENV_VALUES = set(["server", "token"])
 
@@ -38,6 +37,7 @@ class ConfigedBot(Bot):
     def __init__(self, config: Config, command_prefix: str, **kwargs):
         super().__init__(command_prefix, **kwargs)
         self.config = config
+        self.logger: Optional[Logger]
 
 
 def load_env():

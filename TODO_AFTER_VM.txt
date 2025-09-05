@@ -1,8 +1,5 @@
 
 
-
-- Make fun cog guilded
-
 - Determine if GuildedCog can basically be made with preexisting elements
   - like https://discordpy.readthedocs.io/en/stable/interactions/api.html#discord.app_commands.guild_only
 

@@ -12,6 +12,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from base.guildedcog import GuildedCog
 from helpers import checks
 
 
@@ -33,9 +34,9 @@ class Choice(discord.ui.View):
         self.stop()
 
 
-class Fun(commands.Cog, name="fun"):
+class Fun(GuildedCog, name="fun"):
     def __init__(self, bot):
-        self.bot = bot
+        super().__init__(bot)
 
     @commands.hybrid_command(
         name="coinflip", description="Make a coin flip, but give your bet before."

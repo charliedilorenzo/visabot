@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 
 import discord
-from discord import ClientUser, Member, Role
+from discord import ClientUser, Member
 from discord.ext.commands import Bot
 
 from base.guildedcog import GuildedCog
@@ -19,14 +19,6 @@ class VisaCog(GuildedCog):
         self.role_name = "Visa"
         # self.visarole: Optional[Role]
         self.visabot: Optional[ClientUser]
-
-    async def _assign_on_ready(self):
-        self.guild = await self.bot.fetch_guild(self.bot.config.server)
-        print(f"Using guild '{self.guild}'")
-        self.visabot = self.bot.user
-        print(f"Visabot is {self.visabot}")
-        # self.visarole = discord.utils.get(self.guild.roles, name=self.role_name)
-        # print(f"Visarole is {self.visarole}")
 
     async def get_all_visarole_members(self):
         visarole_members = []
@@ -110,7 +102,4 @@ class VisaCog(GuildedCog):
         if execution_executed:
             await spam_channel.send("Commencing execution:")
             await self.send_random_delete_gif(spam_channel)
-        return success
-        return success
-        return success
         return success

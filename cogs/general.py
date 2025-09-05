@@ -10,14 +10,15 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from base.guildedcog import ConfigedBot
+from base.config import ConfigedBot
+from base.guildedcog import GuildedCog
 from helpers import checks
 
 
-class General(commands.Cog, name="general"):
+class General(GuildedCog, name="general"):
 
     def __init__(self, bot: ConfigedBot):
-        self.bot = bot
+        super().__init__(bot)
 
     @commands.hybrid_command(
         name="help", description="List all commands the bot has loaded."

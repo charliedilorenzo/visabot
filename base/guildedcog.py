@@ -6,6 +6,7 @@ Description:
 Version: 5.5.0
 """
 
+from threading import Lock
 from typing import Optional, Union
 
 import discord
@@ -15,11 +16,9 @@ from discord.ext.commands import CommandError, Context
 
 from base import MEDIA_PATH
 from base.config import ConfigedBot
-from helpers import checks
 
 
 class GuildedCog(commands.Cog):
-
     def __init__(self, bot: ConfigedBot):
         self.bot = bot
         # manually import this just cause not in config i guess
@@ -79,52 +78,13 @@ class GuildedCog(commands.Cog):
         member = self.guild.get_member_named(name, discriminator)
         return member
 
-    @commands.hybrid_command(
-        name="designate_spam_channel",
-        description="Give a text channel to designate it as the bot spam channel.",
-    )
-    @checks.is_owner()
-    async def designate_spam_channel(
-        self, context: Context, channel: discord.TextChannel
-    ) -> None:
-        """
-        The bot will say anything you want, but using embeds.
-
-        :param context: The hybrid command context.
-        :param message: The message that should be repeated by the bot.
-        """
-        # TODO this should be stored with database
-        raise NotImplementedError("This is currently no longer implemented")
-        self.bot.config.spam_channel = channel.id
-        message = f"The bot's spam channel has been updated to: '{channel.name}'"
-        embed = discord.Embed(description=message, color=0x9C84EF)
-        await context.send(embed=embed)
-
-    @commands.hybrid_command(
-        name="designate_status_channel",
-        description="Give a text channel to designate it as the bot spam channel.",
-    )
-    @checks.is_owner()
-    async def designate_status_channel(
-        self, context: Context, channel: discord.TextChannel
-    ) -> None:
-        """
-        The bot will say anything you want, but using embeds.
-
-        :param context: The hybrid command context.
-        :param message: The message that should be repeated by the bot.
-        """
-        # TODO this should be stored with database
-        raise NotImplementedError("This is currently no longer implemented")
-        self.bot.config.bot_status_channel = channel.id
-
-        message = f"The bot's status channel has been updated to: '{channel.name}'"
-        embed = discord.Embed(description=message, color=0x9C84EF)
-        await context.send(embed=embed)
-        await context.send(embed=embed)
-
     async def cog_command_error(self, ctx: Context, error: CommandError):
         # TODO we may want to explode the server and save the logs here instead of proceeding cause it
         # could get dicey
-        print()
         await self.report_error()
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.guild = await self.bot.fetch_guild(self.bot.config.server)
+        most_specific_subclass = type(self).mro()[0]
+        print(f"Starting Cog: {most_specific_subclass.__name__}")

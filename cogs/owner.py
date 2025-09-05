@@ -9,15 +9,17 @@ Version: 5.5.0
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext.commands import Bot, Context
 
+from base.config import ConfigedBot
+from base.guildedcog import GuildedCog
 from helpers import checks, db_manager
 
 
-class Owner(commands.Cog, name="owner"):
+class Owner(GuildedCog, name="owner"):
 
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot: ConfigedBot):
+        super().__init__(bot)
 
     @commands.command(
         name="ownerhelp",
@@ -58,7 +60,6 @@ class Owner(commands.Cog, name="owner"):
         description="Synchonizes the slash commands.",
     )
     @app_commands.describe(scope="The scope of the sync. Can be `global` or `guild`")
-    @checks.is_owner()
     @checks.is_correct_guild()
     async def sync(self, context: Context, scope: str) -> None:
         """
@@ -373,6 +374,50 @@ class Owner(commands.Cog, name="owner"):
         embed.set_footer(
             text=f"There {'is' if total == 1 else 'are'} now {total} {'user' if total == 1 else 'users'} in the blacklist"
         )
+        await context.send(embed=embed)
+
+    @commands.hybrid_command(
+        name="designate_spam_channel",
+        description="Give a text channel to designate it as the bot spam channel.",
+    )
+    @checks.is_owner()
+    async def designate_spam_channel(
+        self, context: Context, channel: discord.TextChannel
+    ) -> None:
+        """
+        The bot will say anything you want, but using embeds.
+
+        :param context: The hybrid command context.
+        :param message: The message that should be repeated by the bot.
+        """
+        # TODO this should be stored with database
+        raise NotImplementedError("This is currently no longer implemented")
+        self.bot.config.spam_channel = channel.id
+        message = f"The bot's spam channel has been updated to: '{channel.name}'"
+        embed = discord.Embed(description=message, color=0x9C84EF)
+        await context.send(embed=embed)
+
+    @commands.hybrid_command(
+        name="designate_status_channel",
+        description="Give a text channel to designate it as the bot spam channel.",
+    )
+    @checks.is_owner()
+    async def designate_status_channel(
+        self, context: Context, channel: discord.TextChannel
+    ) -> None:
+        """
+        The bot will say anything you want, but using embeds.
+
+        :param context: The hybrid command context.
+        :param message: The message that should be repeated by the bot.
+        """
+        # TODO this should be stored with database
+        raise NotImplementedError("This is currently no longer implemented")
+        self.bot.config.bot_status_channel = channel.id
+
+        message = f"The bot's status channel has been updated to: '{channel.name}'"
+        embed = discord.Embed(description=message, color=0x9C84EF)
+        await context.send(embed=embed)
         await context.send(embed=embed)
 
 

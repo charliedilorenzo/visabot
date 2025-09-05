@@ -15,7 +15,6 @@ from discord.ext import commands, tasks
 from discord.ext.commands import Context
 from discord.member import Member
 from discord.message import Message
-from discord.user import ClientUser
 
 from base.config import ConfigedBot
 from base.visacog import VisaCog
@@ -101,7 +100,7 @@ class Visabot(VisaCog, name="visabot"):
 
     @commands.hybrid_group(
         name="visa",
-        description="Get information about visa duration/status:     !visa, !visa all, !visa <@another>, !visa another#1234",
+        description="Get information about visa duration/status",
     )
     @checks.not_blacklisted()
     @checks.is_correct_guild()
@@ -170,13 +169,12 @@ class Visabot(VisaCog, name="visabot"):
     )
     @checks.not_blacklisted()
     @checks.is_correct_guild()
-    async def visa_other(self, context: Context, user: discord.User) -> None:
+    async def visa_other(self, context: Context, member: Member) -> None:
         """
         Check the visa duration on a specific user
 
         :param context: The hybrid command context.
         """
-        member = await self.user_to_member(user)
         message = await self.visa_status_message(
             [member], context.channel, context.guild
         )
@@ -303,7 +301,10 @@ class Visabot(VisaCog, name="visabot"):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        await self._assign_on_ready()
+        await super().on_ready()
+        self.visabot = self.bot.user
+        print(f"Using guild '{self.guild}'")
+        print(f"Visabot is {self.visabot}")
         success = await self.add_visa_after_offline()
         if not success:
             spam_channel = await self.get_spam_channel()

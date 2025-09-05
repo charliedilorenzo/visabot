@@ -10,7 +10,7 @@ import asyncio
 import logging
 import os
 import platform
-import sys
+from pathlib import Path
 
 import aiosqlite
 import discord
@@ -18,8 +18,9 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 import exceptions
-from base.cogclasses import ConfigedBot
-from base.config import CONFIG, load_env
+from base.config import CONFIG
+from base.guildedcog import ConfigedBot
+from helpers import BASE_PATH, DATABASE_PATH, SCHEMA_PATH
 
 intents = discord.Intents.all()
 # theoretically redundant but just in case
@@ -88,12 +89,8 @@ bot.logger = logger
 
 
 async def init_db():
-    async with aiosqlite.connect(
-        f"{os.path.realpath(os.path.dirname(__file__))}/database/database.db"
-    ) as db:
-        with open(
-            f"{os.path.realpath(os.path.dirname(__file__))}/database/schema.sql"
-        ) as file:
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        with open(SCHEMA_PATH) as file:
             await db.executescript(file.read())
         await db.commit()
 
@@ -223,9 +220,10 @@ async def load_cogs() -> None:
     """
     The code in this function is executed whenever the bot will start.
     """
-    for file in os.listdir(f"{os.path.realpath(os.path.dirname(__file__))}/cogs"):
-        if file.endswith(".py"):
-            extension = file[:-3]
+    for file in (BASE_PATH / "cogs").iterdir():
+        if file.suffix == ".py":
+            extension = file.stem
+            print("Loading extension")
             try:
                 await bot.load_extension(f"cogs.{extension}")
                 bot.logger.info(f"Loaded extension '{extension}'")

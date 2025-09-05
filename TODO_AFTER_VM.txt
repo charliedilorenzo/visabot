@@ -1,5 +1,8 @@
 
 
+
+- Make fun cog guilded
+
 - Determine if GuildedCog can basically be made with preexisting elements
   - like https://discordpy.readthedocs.io/en/stable/interactions/api.html#discord.app_commands.guild_only
 
@@ -14,6 +17,11 @@
   - figure out if there is a function that will catch errors
 - move stuff that is main out to better places (espeically todos)
 - use fetch guild decorator
+
+- should we be using discord objects to store server id etc?
+  - server_obj = discord.Object(config.server)
+    print(f"{ server_obj  = }")
+  -
 
 - Figure out how to replace that with SQL database
 

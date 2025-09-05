@@ -15,10 +15,8 @@ from discord import ClientUser, Guild, User
 from discord.ext import commands
 from discord.ext.commands import CommandError, Context
 
-from base import MEDIA_PATH
 from base.config import ConfigedBot
-
-MEDIA = Path(__file__).parent.parent / "media"
+from helpers import MEDIA_PATH
 
 
 class GuildedCog(commands.Cog):
@@ -86,7 +84,7 @@ class GuildedCog(commands.Cog):
         # TODO add ability to actually log the errors
         await spam_channel.send(f"Logging errors to XYZ")
         await spam_channel.send(f"I explode now bye")
-        explode_gif = MEDIA / "exit_gifs" / "nge_explode.gif"
+        explode_gif = MEDIA_PATH / "exit_gifs" / "nge_explode.gif"
         with open(explode_gif, "rb") as f:
             picture = discord.File(f)
             await spam_channel.send(file=picture)

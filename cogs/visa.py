@@ -8,7 +8,6 @@ Version: 5.5.0
 
 import datetime
 import random
-from pathlib import Path
 
 import discord
 from discord.ext import commands, tasks
@@ -19,10 +18,8 @@ from discord.message import Message
 from base.config import ConfigedBot
 from base.visacog import VisaCog
 from exceptions import VisaKickFailure
-from helpers import checks
+from helpers import MEDIA_PATH, checks
 from helpers.time_helpers import get_now
-
-MEDIA = Path(__file__).parent.parent / "media"
 
 
 # TODO add last offline to db or somethings
@@ -94,7 +91,7 @@ class Visabot(VisaCog, name="visabot"):
         return message
 
     async def send_random_delete_gif(self, channel: discord.TextChannel) -> str:
-        purge_directory = MEDIA / "purge_gifs"
+        purge_directory = MEDIA_PATH / "purge_gifs"
         gif_file = random.choice(list(purge_directory.iterdir()))
         with open(gif_file, "rb") as f:
             picture = discord.File(f)

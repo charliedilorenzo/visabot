@@ -6,6 +6,7 @@ from discord import ClientUser, Member
 from discord.ext.commands import Bot
 
 from base.guildedcog import GuildedCog
+from exceptions import VisaKickFailure
 
 
 class VisaCog(GuildedCog):
@@ -82,10 +83,9 @@ class VisaCog(GuildedCog):
         await spam_channel.send(embed=embed)
         return result
 
-    async def purge_all_overstayed_visa(self) -> bool:
-        success = True
+    async def purge_all_overstayed_visa(self):
         # TODO add back purging visa
-        return success
+        return
         execution_executed = False
         guild = self.bot.guild
         kick_list = await self.get_all_visarole_members()
@@ -102,4 +102,5 @@ class VisaCog(GuildedCog):
         if execution_executed:
             await spam_channel.send("Commencing execution:")
             await self.send_random_delete_gif(spam_channel)
-        return success
+        if not success:
+            raise VisaKickFailure("Purge has failed")

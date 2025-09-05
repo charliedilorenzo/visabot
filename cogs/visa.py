@@ -18,6 +18,7 @@ from discord.message import Message
 
 from base.config import ConfigedBot
 from base.visacog import VisaCog
+from exceptions import VisaKickFailure
 from helpers import checks
 from helpers.time_helpers import get_now
 
@@ -30,6 +31,7 @@ class Visabot(VisaCog, name="visabot"):
     def __init__(self, bot: ConfigedBot):
         super().__init__(bot)
 
+    # TODO this should perhaps be moved to guildedcog
     def get_help_blurb(self, embed: discord.Embed) -> str:
         prefix = self.bot.config.command_prefix
         commands_list = self.get_commands()
@@ -267,9 +269,9 @@ class Visabot(VisaCog, name="visabot"):
                 f"You called {self.get_nick_or_name(message.author)}?"
             )
 
-    async def add_visa_after_offline(self) -> bool:
+    async def add_visa_after_offline(self):
         # TODO reenable when we add visa to DB
-        return True
+        return
         # guild = await self.bot.fetch_guild(self.bot.config['server_id'])
         # last_around = self.get_last_around()
         # joined_during_offline_members = []
@@ -297,6 +299,8 @@ class Visabot(VisaCog, name="visabot"):
         #     # check if we added visa role
         #     if not (await self.has_visa(refetch_member, guild)):
         #       success = False
+        # if not success:
+        #     raise VisaKickFailure("Adding Visas has failed")
         # return success
 
     @commands.Cog.listener()
@@ -305,17 +309,8 @@ class Visabot(VisaCog, name="visabot"):
         self.visabot = self.bot.user
         print(f"Using guild '{self.guild}'")
         print(f"Visabot is {self.visabot}")
-        success = await self.add_visa_after_offline()
-        if not success:
-            spam_channel = await self.get_spam_channel()
-            await spam_channel.send("Adding Visas has failed")
-            await self.report_error()
-
-        success = await self.purge_all_overstayed_visa()
-        if not success:
-            spam_channel = await self.get_spam_channel()
-            await spam_channel.send("Purge has failed")
-            await self.report_error()
+        await self.add_visa_after_offline()
+        await self.purge_all_overstayed_visa()
         self.purge_visas_background_task.start()
         status_channel = await self.get_bot_status_channel()
         await status_channel.send("Visabot Online")
@@ -329,14 +324,7 @@ class Visabot(VisaCog, name="visabot"):
     @tasks.loop(seconds=300)  # task runs every 5 minutes
     async def purge_visas_background_task(self):
         print("Purging Visas")
-        success = await self.purge_all_overstayed_visa()
-        if success:
-            pass
-        else:
-            spam_channel = await self.get_spam_channel()
-            await spam_channel.send("Purge has failed")
-            await self.report_error()
-        now = get_now()
+        await self.purge_all_overstayed_visa()
 
     @purge_visas_background_task.before_loop
     async def before_purge_background_task(self):

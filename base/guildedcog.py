@@ -6,6 +6,7 @@ Description:
 Version: 5.5.0
 """
 
+from pathlib import Path
 from threading import Lock
 from typing import Optional, Union
 
@@ -16,6 +17,8 @@ from discord.ext.commands import CommandError, Context
 
 from base import MEDIA_PATH
 from base.config import ConfigedBot
+
+MEDIA = Path(__file__).parent.parent / "media"
 
 
 class GuildedCog(commands.Cog):
@@ -30,15 +33,6 @@ class GuildedCog(commands.Cog):
     # uses config to determine guild
     async def get_spam_channel(self) -> discord.TextChannel:
         return await self.guild.fetch_channel(self.bot.config.spam_channel)
-
-    async def report_error(self):
-        if not self.bot.config.dev_id:
-            return
-        dev_at = self.get_at(await self.guild.fetch_member(self.bot.config.dev_id))
-        spam_channel = await self.get_spam_channel()
-        await spam_channel.send(
-            f"Visabot has error - {dev_at} get on and fix it you dummy."
-        )
 
     async def get_bot_status_channel(self) -> discord.TextChannel:
         return await self.guild.fetch_channel(self.bot.config.bot_status_channel)
@@ -81,7 +75,22 @@ class GuildedCog(commands.Cog):
     async def cog_command_error(self, ctx: Context, error: CommandError):
         # TODO we may want to explode the server and save the logs here instead of proceeding cause it
         # could get dicey
-        await self.report_error()
+        if not self.bot.config.dev_id:
+            return
+        dev_at = self.get_at(await self.guild.fetch_member(self.bot.config.dev_id))
+        spam_channel = await self.get_spam_channel()
+        error_message = f"Visabot has error - {dev_at} get on and fix it you dummy."
+        error_message += f"\nError Type: {type(error).__name__}"
+        error_message += f"\nError Args: {error.args}"
+        await spam_channel.send(error_message)
+        # TODO add ability to actually log the errors
+        await spam_channel.send(f"Logging errors to XYZ")
+        await spam_channel.send(f"I explode now bye")
+        explode_gif = MEDIA / "exit_gifs" / "nge_explode.gif"
+        with open(explode_gif, "rb") as f:
+            picture = discord.File(f)
+            await spam_channel.send(file=picture)
+        exit()
 
     @commands.Cog.listener()
     async def on_ready(self):

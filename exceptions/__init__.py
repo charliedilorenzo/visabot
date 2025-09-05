@@ -6,6 +6,7 @@ Description:
 Version: 5.5.0
 """
 
+from discord.errors import DiscordException
 from discord.ext import commands
 
 
@@ -35,5 +36,11 @@ class IncorrectGuild(commands.CheckFailure):
     """
 
     def __init__(self, message="Command run in incorrect guild!"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class VisaKickFailure(DiscordException):
+    def __init__(self, message="Kicking a user witha a visa has failed"):
         self.message = message
         super().__init__(self.message)

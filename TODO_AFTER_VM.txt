@@ -1,10 +1,9 @@
 
 
+- Move main.py stuff out and make a bot base class file for it
+
 - Determine if GuildedCog can basically be made with preexisting elements
   - like https://discordpy.readthedocs.io/en/stable/interactions/api.html#discord.app_commands.guild_only
-
-- error catching after a failing function will always send message in server
-  - like sending the preexisting error message one
 
 - investigate and this more deeply about which classes should have which functions (cause they be kinda jumbled)
 - check that guild works without fetched guild and is up to date even as a variable of the class
@@ -13,7 +12,6 @@
   - create some function that will generate this
   - figure out if there is a function that will catch errors
 - move stuff that is main out to better places (espeically todos)
-- use fetch guild decorator
 
 - should we be using discord objects to store server id etc?
   - server_obj = discord.Object(config.server)

@@ -304,8 +304,8 @@ class Visabot(VisaCog, name="visabot"):
     async def on_ready(self):
         await super().on_ready()
         self.visabot = self.bot.user
-        print(f"Using guild '{self.guild}'")
-        print(f"Visabot is {self.visabot}")
+        self.logger.info(f"Using guild '{self.guild}'")
+        self.logger.info(f"Visabot is {self.visabot}")
         await self.add_visa_after_offline()
         await self.purge_all_overstayed_visa()
         self.purge_visas_background_task.start()
@@ -320,7 +320,7 @@ class Visabot(VisaCog, name="visabot"):
 
     @tasks.loop(seconds=300)  # task runs every 5 minutes
     async def purge_visas_background_task(self):
-        print("Purging Visas")
+        self.logger.info("Purging Visas")
         await self.purge_all_overstayed_visa()
 
     @purge_visas_background_task.before_loop

@@ -6,8 +6,9 @@ Description:
 Version: 5.5.0
 """
 
-from pathlib import Path
-from threading import Lock
+import shutil
+import traceback
+from datetime import datetime
 from typing import Optional, Union
 
 import discord
@@ -16,12 +17,13 @@ from discord.ext import commands
 from discord.ext.commands import CommandError, Context
 
 from base.config import ConfigedBot
-from helpers import MEDIA_PATH
+from helpers import BASE_PATH, LOG_PATH, MEDIA_PATH
 
 
 class GuildedCog(commands.Cog):
     def __init__(self, bot: ConfigedBot):
         self.bot = bot
+        self.logger = self.bot.logger
         # manually import this just cause not in config i guess
         self.test_mode = bot.config.test_mode
         self.warning_gif = MEDIA_PATH / "warning_gifs" / "visabot_is_watching_you.gif"
@@ -71,27 +73,39 @@ class GuildedCog(commands.Cog):
         return member
 
     async def cog_command_error(self, ctx: Context, error: CommandError):
-        # TODO we may want to explode the server and save the logs here instead of proceeding cause it
-        # could get dicey
-        if not self.bot.config.dev_id:
-            return
-        dev_at = self.get_at(await self.guild.fetch_member(self.bot.config.dev_id))
+        if self.bot.config.dev_id:
+            dev_at = self.get_at(await self.guild.fetch_member(self.bot.config.dev_id))
+        else:
+            dev_at = "Dev!"
+
+        # Send messages in spam telling about error and where for mroe details
         spam_channel = await self.get_spam_channel()
         error_message = f"Visabot has error - {dev_at} get on and fix it you dummy."
         error_message += f"\nError Type: {type(error).__name__}"
         error_message += f"\nError Args: {error.args}"
         await spam_channel.send(error_message)
-        # TODO add ability to actually log the errors
-        await spam_channel.send(f"Logging errors to XYZ")
+        await spam_channel.send(f"Logging errors to {str(BASE_PATH / 'discord.log')}")
         await spam_channel.send(f"I explode now bye")
         explode_gif = MEDIA_PATH / "exit_gifs" / "nge_explode.gif"
         with open(explode_gif, "rb") as f:
             picture = discord.File(f)
             await spam_channel.send(file=picture)
+        exception_str = traceback.format_exception(error)
+        exception_str = "".join(exception_str)
+        exception_str = exception_str.replace("\\n", "\n")
+        self.logger.info(exception_str)
+
+        # Copy just in case idiot and you copy over it after running it
+        log_path = BASE_PATH / "discord.log"
+        formatted_now = datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")
+        shutil.copy(log_path, LOG_PATH / f"discord_error_{formatted_now}.log")
+
         exit()
 
     @commands.Cog.listener()
     async def on_ready(self):
         self.guild = await self.bot.fetch_guild(self.bot.config.server)
         most_specific_subclass = type(self).mro()[0]
-        print(f"Starting Cog: {most_specific_subclass.__name__}")
+        self.logger.info(f"Starting Cog: {most_specific_subclass.__name__}")
+        self.logger.info(f"Starting Cog: {most_specific_subclass.__name__}")
+        self.logger.info(f"Starting Cog: {most_specific_subclass.__name__}")

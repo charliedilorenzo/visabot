@@ -10,7 +10,6 @@ import asyncio
 import logging
 import os
 import platform
-from pathlib import Path
 
 import aiosqlite
 import discord
@@ -20,7 +19,7 @@ from discord.ext.commands import Context
 import exceptions
 from base.config import CONFIG
 from base.guildedcog import ConfigedBot
-from helpers import BASE_PATH, DATABASE_PATH, SCHEMA_PATH
+from helpers import BASE_PATH, DATABASE_PATH, LOG_PATH, SCHEMA_PATH
 
 intents = discord.Intents.all()
 # theoretically redundant but just in case
@@ -76,7 +75,8 @@ logger.setLevel(logging.INFO)
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(LoggingFormatter())
 # File handler
-file_handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
+log_path = filename = LOG_PATH / "discord.log"
+file_handler = logging.FileHandler(log_path, encoding="utf-8", mode="w")
 file_handler_formatter = logging.Formatter(
     "[{asctime}] [{levelname:<8}] {name}: {message}", "%Y-%m-%d %H:%M:%S", style="{"
 )

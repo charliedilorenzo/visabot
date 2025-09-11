@@ -107,5 +107,3 @@ class GuildedCog(commands.Cog):
         self.guild = await self.bot.fetch_guild(self.bot.config.server)
         most_specific_subclass = type(self).mro()[0]
         self.logger.info(f"Starting Cog: {most_specific_subclass.__name__}")
-        self.logger.info(f"Starting Cog: {most_specific_subclass.__name__}")
-        self.logger.info(f"Starting Cog: {most_specific_subclass.__name__}")

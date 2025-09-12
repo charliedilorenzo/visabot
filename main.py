@@ -113,7 +113,7 @@ async def on_ready() -> None:
     # TODO what the heck was this for
     if CONFIG.sync_commands_globally:
         bot.logger.info("Syncing commands globally...")
-        await bot.tree.sync()
+        await bot.tree.sync(guild=bot.get_guild(CONFIG.server))
 
 
 @bot.event

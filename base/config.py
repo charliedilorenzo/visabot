@@ -23,18 +23,19 @@ ACCEPTED_KEYS = set(
 
 @dataclass
 class Config:
-    test_mode: True
     token: str
     server: int
     spam_channel: str
     bot_status_channel: str
     dev_id: Optional[int] = None
     command_prefix: str = "visabot"
-    sync_commands_globally: bool = False
+    sync_commands_globally: bool = True
+    test_mode: bool = True
 
 
 class ConfigedBot(Bot):
     def __init__(self, config: Config, command_prefix: str, **kwargs):
+        kwargs["guilds"] = [config.server]
         super().__init__(command_prefix, **kwargs)
         self.config = config
         self.logger: Optional[Logger]
@@ -55,6 +56,9 @@ def load_env():
         print(f"Found extra keys: {extra_keys}")
         sys.exit(1)
     config_dict["test_mode"] = strtobool(config_dict.pop("test_mode", True)) == 1
+    config_dict["sync_commands_globally"] = (
+        strtobool(config_dict.pop("sync_commands_globally", True)) == 1
+    )
     config_dict["server"] = int(config_dict.pop("server"))
     if config_dict.get("dev_id"):
         config_dict["dev_id"] = int(config_dict.pop("dev_id"))

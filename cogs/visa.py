@@ -227,14 +227,13 @@ class Visabot(VisaCog, name="visabot"):
         await member.add_roles(visarole)
         name = self.get_at(member)
         warning_message = f"{name} has been given a visa. \n You have {self.time_left_message(member)}."
-        spam_channel = await self.get_spam_channel()
-        await spam_channel.send(name)
+        await self.spam_channel.send(name)
         embed = discord.Embed(description=f"{warning_message}")
         total = await self.get_visa_total()
         embed.set_footer(
             text=f"There {'is' if total == 1 else 'are'} now {total} {'user' if total == 1 else 'users'} with the Visa role."
         )
-        await spam_channel.send(embed=embed)
+        await self.spam_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
@@ -273,7 +272,6 @@ class Visabot(VisaCog, name="visabot"):
         # last_around = self.get_last_around()
         # joined_during_offline_members = []
         # print(self.bot.config["spam_channel"])
-        # spam_channel = await self.get_spam_channel()
         # async for member in guild.fetch_members(limit=None):
         #   if (last_around - member.joined_at).total_seconds() <= 0:
         #     joined_during_offline_members.append(member)
@@ -283,7 +281,7 @@ class Visabot(VisaCog, name="visabot"):
         #   if not (await self.has_visa(member, guild)):
         #     name = self.get_at(member)
         #     await member.add_roles(visarole)
-        #     await spam_channel.send(name)
+        #     await self.spam_channel.send(name)
         #     warning_message = f"{name} has been given a visa. \n You have {self.time_left_message(member)}.")
         #     embed = discord.Embed(description=f"{warning_message}")
         #     total = await self.get_visa_total()
@@ -291,7 +289,7 @@ class Visabot(VisaCog, name="visabot"):
         #       text=
         #       f"There {'is' if total == 1 else 'are'} now {total} {'user' if total == 1 else 'users'} with the Visa role."
         #     )
-        #     await spam_channel.send(embed=embed)
+        #     await self.spam_channel.send(embed=embed)
         #     refetch_member = await guild.fetch_member(member.id)
         #     # check if we added visa role
         #     if not (await self.has_visa(refetch_member, guild)):
@@ -309,14 +307,12 @@ class Visabot(VisaCog, name="visabot"):
         await self.add_visa_after_offline()
         await self.purge_all_overstayed_visa()
         self.purge_visas_background_task.start()
-        status_channel = await self.get_bot_status_channel()
-        await status_channel.send("Visabot Online")
+        await self.bot_status_channel.send("Visabot Online")
         return
 
     @commands.Cog.listener()
     async def on_disconnect(self):
-        status_channel = await self.get_bot_status_channel()
-        await status_channel.send("Visabot Offline")
+        await self.bot_status_channel.send("Visabot Offline")
 
     @tasks.loop(seconds=300)  # task runs every 5 minutes
     async def purge_visas_background_task(self):

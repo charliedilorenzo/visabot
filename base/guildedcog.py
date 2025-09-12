@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Optional, Union
 
 import discord
-from discord import ClientUser, Guild, User
+from discord import ClientUser, Guild, TextChannel, User
 from discord.ext import commands
 from discord.ext.commands import CommandError, Context
 
@@ -29,20 +29,15 @@ class GuildedCog(commands.Cog):
         self.warning_gif = MEDIA_PATH / "warning_gifs" / "visabot_is_watching_you.gif"
         # this is currently defined in the visa bot but we may waant to move some stuff to another place
         self.guild: Optional[Guild] = None
+        self.spam_channel: Optional[TextChannel] = None
+        self.bot_status_channel: Optional[TextChannel] = None
 
-    # uses config to determine guild
-    async def get_spam_channel(self) -> discord.TextChannel:
-        return await self.guild.fetch_channel(self.bot.config.spam_channel)
-
-    async def get_bot_status_channel(self) -> discord.TextChannel:
-        return await self.guild.fetch_channel(self.bot.config.bot_status_channel)
-
-    def is_correct_guild_check(self, guild: discord.Guild) -> bool:
-        if isinstance(guild, discord.Guild):
+    def is_correct_guild_check(self, guild: Guild) -> bool:
+        if isinstance(guild, Guild):
             guild = guild.id
         return guild == self.bot.config.server
 
-    async def wrong_guild_message(self, channel: discord.TextChannel, context):
+    async def wrong_guild_message(self, channel: TextChannel, context):
         message = "Visabot is not currently monitoring this server"
         embed = discord.Embed(description=f"{message}", color=0x9C84EF)
         embed.set_footer(text=f"Just trying to get some sleep in...")
@@ -79,7 +74,7 @@ class GuildedCog(commands.Cog):
             dev_at = "Dev!"
 
         # Send messages in spam telling about error and where for mroe details
-        spam_channel = await self.get_spam_channel()
+        spam_channel = self.spam_channel
         error_message = f"Visabot has error - {dev_at} get on and fix it you dummy."
         error_message += f"\nError Type: {type(error).__name__}"
         error_message += f"\nError Args: {error.args}"
@@ -107,3 +102,7 @@ class GuildedCog(commands.Cog):
         self.guild = await self.bot.fetch_guild(self.bot.config.server)
         most_specific_subclass = type(self).mro()[0]
         self.logger.info(f"Starting Cog: {most_specific_subclass.__name__}")
+        self.spam_channel = await self.guild.fetch_channel(self.bot.config.spam_channel)
+        self.bot_status_channel = await self.guild.fetch_channel(
+            self.bot.config.bot_status_channel
+        )

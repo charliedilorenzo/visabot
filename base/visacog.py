@@ -50,13 +50,13 @@ class VisaCog(GuildedCog):
             return
         name = self.get_at(member)
         visarole = await self.get_visa_role()
-        spam_channel = await self.get_spam_channel()
 
         # the message and result on true error
         message = f"An error has occured: likely {name} who visabot attempted to kick is still on the server."
         result = [False, False]
         try:
-            await guild.kick(member)
+            # TODO reenable at some point
+            # await guild.kick(member)
             refetch_member = await guild.fetch_member(member.id)
             # here is a success since we cannot find the member they have been properly kicked from the server
         except discord.NotFound:
@@ -80,7 +80,7 @@ class VisaCog(GuildedCog):
         embed.set_footer(
             text=f"There {'is' if total == 1 else 'are'} now {total} {'user' if total == 1 else 'users'} with the Visa role."
         )
-        await spam_channel.send(embed=embed)
+        await self.spam_channel.send(embed=embed)
         return result
 
     async def purge_all_overstayed_visa(self):
@@ -89,7 +89,6 @@ class VisaCog(GuildedCog):
         execution_executed = False
         guild = self.bot.guild
         kick_list = await self.get_all_visarole_members()
-        spam_channel = await self.get_spam_channel()
         for member in kick_list:
             if self.time_left_value_seconds(member) <= 0:
                 tracker_bools = await self.attempt_kick_visarole_member(member, guild)
@@ -100,7 +99,7 @@ class VisaCog(GuildedCog):
         else:
             execution_executed = True
         if execution_executed:
-            await spam_channel.send("Commencing execution:")
-            await self.send_random_delete_gif(spam_channel)
+            await self.spam_channel.send("Commencing execution:")
+            await self.send_random_delete_gif(self.spam_channel)
         if not success:
             raise VisaKickFailure("Purge has failed")

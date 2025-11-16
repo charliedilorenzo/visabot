@@ -23,7 +23,11 @@ from helpers import BASE_PATH, DATABASE_PATH, LOG_PATH, SCHEMA_PATH
 
 intents = discord.Intents.all()
 # theoretically redundant but just in case
+intents.typing = False
+intents.dm_typing = False
+intents.guild_typing = False
 intents.message_content = True
+# intents.members = False
 intents.members = True
 intents.presences = True
 intents.guilds = True
@@ -111,9 +115,10 @@ async def on_ready() -> None:
     )
     await bot.change_presence(activity=basic_activity)
     # TODO what the heck was this for
-    if CONFIG.sync_commands_globally:
-        bot.logger.info("Syncing commands globally...")
-        await bot.tree.sync(guild=bot.get_guild(CONFIG.server))
+    # if CONFIG.sync_commands_globally:
+    bot.logger.info("Syncing commands globally...")
+    # bot.tree.clear_commands(guild=bot.get_guild(CONFIG.server))
+    commands = await bot.tree.sync(guild=bot.get_guild(CONFIG.server))
 
 
 @bot.event
@@ -223,7 +228,6 @@ async def load_cogs() -> None:
     for file in (BASE_PATH / "cogs").iterdir():
         if file.suffix == ".py":
             extension = file.stem
-            print("Loading extension")
             try:
                 await bot.load_extension(f"cogs.{extension}")
                 bot.logger.info(f"Loaded extension '{extension}'")

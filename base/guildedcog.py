@@ -79,7 +79,7 @@ class GuildedCog(commands.Cog):
         error_message += f"\nError Type: {type(error).__name__}"
         error_message += f"\nError Args: {error.args}"
         await spam_channel.send(error_message)
-        await spam_channel.send(f"Logging errors to {str(BASE_PATH / 'discord.log')}")
+        await spam_channel.send(f"Logging errors to {str(LOG_PATH / 'discord.log')}")
         await spam_channel.send(f"I explode now bye")
         explode_gif = MEDIA_PATH / "exit_gifs" / "nge_explode.gif"
         with open(explode_gif, "rb") as f:
@@ -91,7 +91,7 @@ class GuildedCog(commands.Cog):
         self.logger.info(exception_str)
 
         # Copy just in case idiot and you copy over it after running it
-        log_path = BASE_PATH / "discord.log"
+        log_path = LOG_PATH / "discord.log"
         formatted_now = datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")
         shutil.copy(log_path, LOG_PATH / f"discord_error_{formatted_now}.log")
 
@@ -106,3 +106,4 @@ class GuildedCog(commands.Cog):
         self.bot_status_channel = await self.guild.fetch_channel(
             self.bot.config.bot_status_channel
         )
+        return

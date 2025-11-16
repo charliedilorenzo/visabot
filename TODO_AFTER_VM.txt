@@ -1,10 +1,5 @@
 
 
-- Move main.py stuff out and make a bot base class file for it
-
-- Determine if GuildedCog can basically be made with preexisting elements
-  - like https://discordpy.readthedocs.io/en/stable/interactions/api.html#discord.app_commands.guild_only
-
 - investigate and this more deeply about which classes should have which functions (cause they be kinda jumbled)
 - check that guild works without fetched guild and is up to date even as a variable of the class
   - probably replace with context otherwise
@@ -26,3 +21,6 @@
 
 - talk cog for reactions to text being typed in various channels
 - make another cog with some kind of polls function?
+- league of legends code
+
+- add a media check function

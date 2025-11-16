@@ -38,7 +38,6 @@ class ConfigedBot(Bot):
         kwargs["guilds"] = [config.server]
         super().__init__(command_prefix, **kwargs)
         self.config = config
-        self.logger: Optional[Logger]
 
 
 def load_env():

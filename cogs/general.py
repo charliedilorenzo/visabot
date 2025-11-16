@@ -145,6 +145,14 @@ class General(GuildedCog, name="general"):
         )
         await context.send(embed=embed)
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await super().on_ready()
+        bot_member = await self.guild.fetch_member(self.bot.user.id)
+        perms = {key: value for key, value in bot_member.guild_permissions}
+        self.logger.info(f"{perms = }")
+        return
+
 
 async def setup(bot):
     await bot.add_cog(General(bot))

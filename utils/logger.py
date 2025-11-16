@@ -1,7 +1,7 @@
 import logging
 from logging import Logger
 
-from helpers import LOG_PATH
+from utils import LOG_PATH
 
 
 # Setup both of the loggers

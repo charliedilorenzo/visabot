@@ -13,7 +13,7 @@ from discord.ext.commands import Bot, Context
 
 from base.config import ConfigedBot
 from cogs.base.guildedcog import GuildedCog
-from helpers import checks, db_manager
+from utils import checks, db_manager
 
 
 class Owner(GuildedCog, name="owner"):

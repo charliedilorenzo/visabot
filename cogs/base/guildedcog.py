@@ -17,7 +17,7 @@ from discord.ext import commands
 from discord.ext.commands import CommandError, Context
 
 from base.config import ConfigedBot
-from helpers import BASE_PATH, LOG_PATH, MEDIA_PATH
+from utils import BASE_PATH, LOG_PATH, MEDIA_PATH
 
 
 class GuildedCog(commands.Cog):

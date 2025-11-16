@@ -14,8 +14,8 @@ from discord.ext import commands
 
 from base.basebot import BaseBot
 from base.config import CONFIG
-from base.guildedcog import ConfigedBot
-from helpers import DATABASE_PATH, SCHEMA_PATH
+from cogs.base.guildedcog import ConfigedBot
+from utils import DATABASE_PATH, SCHEMA_PATH
 
 intents = discord.Intents.all()
 # theoretically redundant but just in case

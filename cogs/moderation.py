@@ -12,7 +12,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 from cogs.base.guildedcog import GuildedCog
-from helpers import checks, db_manager
+from utils import checks, db_manager
 
 
 class Moderation(GuildedCog, name="moderation"):

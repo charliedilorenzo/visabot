@@ -13,7 +13,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 from cogs.base.guildedcog import GuildedCog
-from helpers import checks
+from utils import checks
 
 
 class Choice(discord.ui.View):

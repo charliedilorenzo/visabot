@@ -16,8 +16,8 @@ from discord.ext.commands import Context
 import exceptions
 from base.config import CONFIG, Config
 from cogs.base.guildedcog import ConfigedBot
-from helpers import BASE_PATH
-from helpers.logger import BotLogger
+from utils import BASE_PATH
+from utils.logger import BotLogger
 
 intents = discord.Intents.all()
 # theoretically redundant but just in case

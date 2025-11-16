@@ -12,7 +12,7 @@ from discord.ext.commands import Context
 
 from base.config import ConfigedBot
 from cogs.base.guildedcog import GuildedCog
-from helpers import checks
+from utils import checks
 
 
 class General(GuildedCog, name="general"):

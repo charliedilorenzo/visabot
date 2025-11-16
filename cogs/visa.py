@@ -18,8 +18,8 @@ from discord.message import Message
 from base.config import ConfigedBot
 from base.visacog import VisaCog
 from exceptions import VisaKickFailure
-from helpers import MEDIA_PATH, checks
-from helpers.time_helpers import get_now
+from utils import MEDIA_PATH, checks
+from utils.time_helpers import get_now
 
 
 # TODO add last offline to db or somethings

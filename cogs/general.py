@@ -11,7 +11,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 from base.config import ConfigedBot
-from base.guildedcog import GuildedCog
+from cogs.base.guildedcog import GuildedCog
 from helpers import checks
 
 
@@ -19,6 +19,21 @@ class General(GuildedCog, name="general"):
 
     def __init__(self, bot: ConfigedBot):
         super().__init__(bot)
+
+    @commands.hybrid_command(
+        name="test",
+        description="test",
+    )
+    @checks.not_blacklisted()
+    @checks.is_correct_guild()
+    async def test(self, context: Context) -> None:
+        """
+        test
+
+        :param context: The hybrid command context.
+        """
+        self.logger.info("hey")
+        return
 
     @commands.hybrid_command(
         name="help", description="List all commands the bot has loaded."

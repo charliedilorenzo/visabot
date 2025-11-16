@@ -6,19 +6,17 @@ Description:
 Version: 5.5.0
 """
 
-import asyncio
 import os
 import platform
 
-import aiosqlite
 import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
 import exceptions
 from base.config import CONFIG, Config
-from base.guildedcog import ConfigedBot
-from helpers import BASE_PATH, DATABASE_PATH, SCHEMA_PATH
+from cogs.base.guildedcog import ConfigedBot
+from helpers import BASE_PATH
 from helpers.logger import BotLogger
 
 intents = discord.Intents.all()

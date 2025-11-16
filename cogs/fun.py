@@ -12,7 +12,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from base.guildedcog import GuildedCog
+from cogs.base.guildedcog import GuildedCog
 from helpers import checks
 
 

@@ -12,7 +12,7 @@ from discord.ext import commands
 from discord.ext.commands import Bot, Context
 
 from base.config import ConfigedBot
-from base.guildedcog import GuildedCog
+from cogs.base.guildedcog import GuildedCog
 from helpers import checks, db_manager
 
 

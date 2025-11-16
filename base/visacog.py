@@ -5,7 +5,7 @@ import discord
 from discord import ClientUser, Member
 from discord.ext.commands import Bot
 
-from base.guildedcog import GuildedCog
+from cogs.base.guildedcog import GuildedCog
 from exceptions import VisaKickFailure
 
 

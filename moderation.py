@@ -11,12 +11,13 @@ from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from base.guildedcog import GuildedCog
-from helpers import checks, db_manager
+from bots.basebot import BaseBot
+from cogs.base.guildedcog import GuildedCog
+from utils import checks, db_manager
 
 
 class Moderation(GuildedCog, name="moderation"):
-    def __init__(self, bot):
+    def __init__(self, bot: BaseBot):
         super().__init__(bot)
 
     @commands.hybrid_command(
@@ -344,4 +345,5 @@ class Moderation(GuildedCog, name="moderation"):
 
 
 async def setup(bot):
+    await bot.add_cog(Moderation(bot))
     await bot.add_cog(Moderation(bot))

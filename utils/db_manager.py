@@ -10,7 +10,7 @@ from pathlib import Path
 
 import aiosqlite
 
-from helpers import DATABASE_PATH
+from utils import DATABASE_PATH
 
 
 async def get_blacklisted_users() -> list:

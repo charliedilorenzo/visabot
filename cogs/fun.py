@@ -12,8 +12,9 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from base.guildedcog import GuildedCog
-from helpers import checks
+from bots.basebot import BaseBot
+from cogs.base.guildedcog import GuildedCog
+from utils import checks
 
 
 class Choice(discord.ui.View):
@@ -35,7 +36,7 @@ class Choice(discord.ui.View):
 
 
 class Fun(GuildedCog, name="fun"):
-    def __init__(self, bot):
+    def __init__(self, bot: BaseBot):
         super().__init__(bot)
 
     @commands.hybrid_command(
@@ -65,6 +66,21 @@ class Fun(GuildedCog, name="fun"):
                 color=0xE02B2B,
             )
         await message.edit(embed=embed, view=None, content=None)
+
+    @commands.hybrid_command(
+        name="test",
+        description="test",
+    )
+    @checks.not_blacklisted()
+    @checks.is_correct_guild()
+    async def test(self, context: Context) -> None:
+        """
+        test
+
+        :param context: The hybrid command context.
+        """
+        self.logger.info("hey")
+        return
 
 
 async def setup(bot):

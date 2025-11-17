@@ -11,15 +11,30 @@ from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Bot, Context
 
-from base.config import ConfigedBot
-from base.guildedcog import GuildedCog
-from helpers import checks, db_manager
+from bots.basebot import BaseBot
+from cogs.base.guildedcog import GuildedCog
+from utils import checks, db_manager
 
 
 class Owner(GuildedCog, name="owner"):
 
-    def __init__(self, bot: ConfigedBot):
+    def __init__(self, bot: BaseBot):
         super().__init__(bot)
+
+    def help_blurb(self, context: Context) -> str:
+        prefix = self.bot.config.command_prefix
+        # just to make it easier for me to remember there is owner help command
+        if context.author.id == self.bot.config.dev_id:
+            cog = self.bot.get_cog("owner".lower())
+            commands = cog.get_commands()
+            for command in commands:
+                if command.name == "ownerhelp":
+                    data = []
+                    description = command.description.partition("\n")[0]
+                    data.append(f"{prefix}{command.name} - {description}")
+                    help_text = "\n".join(data)
+            return help_text
+        return None
 
     @commands.command(
         name="ownerhelp",

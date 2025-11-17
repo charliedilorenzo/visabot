@@ -15,21 +15,21 @@ from discord.ext.commands import Context
 from discord.member import Member
 from discord.message import Message
 
-from base.config import ConfigedBot
-from base.visacog import VisaCog
+from bots.basebot import BaseBot
+from cogs.base.visabase import VisaBase
 from exceptions import VisaKickFailure
-from helpers import MEDIA_PATH, checks
-from helpers.time_helpers import get_now
+from utils import MEDIA_PATH, checks
+from utils.time_helpers import get_now
 
 
 # TODO add last offline to db or somethings
-class Visabot(VisaCog, name="visabot"):
+class Visabot(VisaBase, name="visabot"):
 
-    def __init__(self, bot: ConfigedBot):
+    def __init__(self, bot: BaseBot):
         super().__init__(bot)
 
     # TODO this should perhaps be moved to guildedcog
-    def get_help_blurb(self, embed: discord.Embed) -> str:
+    def help_blurb(self, context: Context) -> str:
         prefix = self.bot.config.command_prefix
         commands_list = self.get_commands()
         # pretty much manual cause im lazy
@@ -40,20 +40,16 @@ class Visabot(VisaCog, name="visabot"):
                 continue
             description = command.description.partition("\n")[0]
             data.append(f"{prefix}{command.name} - {description}")
+            print(f"{type(command).mro()}")
             if command.name == "visa":
-                data.append(f"")
+                data.append("")
                 for other_command in command.walk_commands():
                     description = other_command.description.partition("\n")[0]
                     data.append(
                         f"{prefix}{command.name} {other_command.name} - {description}"
                     )
         help_text = "\n".join(data)
-        embed.add_field(
-            name=self.__cog_name__.capitalize(),
-            value=f"```{help_text}```",
-            inline=False,
-        )
-        return embed
+        return help_text
 
     def time_left_value_seconds(self, member: discord.Member) -> datetime.timedelta:
         now = get_now()

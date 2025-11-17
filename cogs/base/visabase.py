@@ -3,22 +3,22 @@ from typing import Optional
 
 import discord
 from discord import ClientUser, Member
-from discord.ext.commands import Bot
 
-from base.guildedcog import GuildedCog
+# from discord.ext.commands import Bot
+from bots.basebot import BaseBot
+from cogs.base.guildedcog import GuildedCog
 from exceptions import VisaKickFailure
 
 
-class VisaCog(GuildedCog):
+class VisaBase(GuildedCog):
 
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: BaseBot):
         super().__init__(bot)
         if self.bot.config.test_mode == True:
             self.visa_length = datetime.timedelta(minutes=1)
         else:
             self.visa_length = datetime.timedelta(days=7)
         self.role_name = "Visa"
-        # self.visarole: Optional[Role]
         self.visabot: Optional[ClientUser]
 
     async def get_all_visarole_members(self):
@@ -45,7 +45,8 @@ class VisaCog(GuildedCog):
     async def attempt_kick_visarole_member(
         self, member: discord.Member, guild: discord.Guild
     ) -> bool:
-        # returns [success, was_kicked]
+        # TODO
+        return True
         if not self.is_correct_guild_check(guild):
             return
         name = self.get_at(member)

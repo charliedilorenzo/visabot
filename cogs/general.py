@@ -10,14 +10,14 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from base.config import ConfigedBot
-from base.guildedcog import GuildedCog
-from helpers import checks
+from bots.basebot import BaseBot
+from cogs.base.guildedcog import GuildedCog
+from utils import checks
 
 
 class General(GuildedCog, name="general"):
 
-    def __init__(self, bot: ConfigedBot):
+    def __init__(self, bot: BaseBot):
         super().__init__(bot)
 
     @commands.hybrid_command(
@@ -30,37 +30,27 @@ class General(GuildedCog, name="general"):
         embed = discord.Embed(
             title="Help", description="List of available commands:", color=0x9C84EF
         )
-        # just to make it easier for me to remember there is owner help command
-        if context.author.id == self.bot.config.dev_id:
-            cog = self.bot.get_cog("owner".lower())
-            commands = cog.get_commands()
-            for command in commands:
-                if command.name == "ownerhelp":
-                    data = []
-                    description = command.description.partition("\n")[0]
-                    data.append(f"{prefix}{command.name} - {description}")
-                    help_text = "\n".join(data)
-                    embed.add_field(
-                        name=("owner").capitalize(),
-                        value=f"```{help_text}```",
-                        inline=False,
-                    )
+
+        self.logger.info(f"{self.bot.cogs = }")
         for i in self.bot.cogs:
             cog = self.bot.get_cog(i.lower())
-            if i == "owner":
-                continue
-            elif i == "visabot":
-                embed = cog.get_help_blurb(embed)
-                continue
-            commands = cog.get_commands()
-            data = []
-            for command in commands:
-                description = command.description.partition("\n")[0]
-                data.append(f"{prefix}{command.name} - {description}")
-            help_text = "\n".join(data)
-            embed.add_field(
-                name=i.capitalize(), value=f"```{help_text}```", inline=False
-            )
+            if hasattr(cog, "help_blurb"):
+                help_text = cog.help_blurb(context)
+                embed.add_field(
+                    name=cog.__cog_name__.capitalize(),
+                    value=f"```{help_text}```",
+                    inline=False,
+                )
+            else:
+                commands = cog.get_commands()
+                data = []
+                for command in commands:
+                    description = command.description.partition("\n")[0]
+                    data.append(f"{prefix}{command.name} - {description}")
+                help_text = "\n".join(data)
+                embed.add_field(
+                    name=i.capitalize(), value=f"```{help_text}```", inline=False
+                )
         await context.send(embed=embed)
 
     @commands.hybrid_command(

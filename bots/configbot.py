@@ -1,7 +1,6 @@
 import sys
 from dataclasses import dataclass
 from distutils.util import strtobool
-from logging import Logger
 from typing import Dict, Optional
 
 import dotenv
@@ -33,13 +32,6 @@ class Config:
     test_mode: bool = True
 
 
-class ConfigedBot(Bot):
-    def __init__(self, config: Config, command_prefix: str, **kwargs):
-        kwargs["guilds"] = [config.server]
-        super().__init__(command_prefix, **kwargs)
-        self.config = config
-
-
 def load_env():
     env_values: Dict[str, str] = dotenv.dotenv_values(".env")
     config_dict = {key.lower(): value for key, value in env_values.items()}
@@ -65,4 +57,8 @@ def load_env():
     return config
 
 
-CONFIG = load_env()
+class ConfigedBot(Bot):
+    def __init__(self, **kwargs):
+        self.config = load_env()
+        kwargs["guilds"] = [self.config.server]
+        super().__init__(self.config.command_prefix, **kwargs)

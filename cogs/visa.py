@@ -15,15 +15,15 @@ from discord.ext.commands import Context
 from discord.member import Member
 from discord.message import Message
 
-from base.visacog import VisaCog
 from bots.basebot import BaseBot
+from cogs.base.visabase import VisaBase
 from exceptions import VisaKickFailure
 from utils import MEDIA_PATH, checks
 from utils.time_helpers import get_now
 
 
 # TODO add last offline to db or somethings
-class Visabot(VisaCog, name="visabot"):
+class Visabot(VisaBase, name="visabot"):
 
     def __init__(self, bot: BaseBot):
         super().__init__(bot)

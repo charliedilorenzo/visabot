@@ -14,8 +14,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 import exceptions
-from base.config import CONFIG, Config
-from cogs.base.guildedcog import ConfigedBot
+from base.config import CONFIG, Config, ConfigedBot
 from utils import BASE_PATH
 from utils.logger import BotLogger
 

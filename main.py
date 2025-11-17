@@ -12,9 +12,8 @@ import aiosqlite
 import discord
 from discord.ext import commands
 
-from base.basebot import BaseBot
 from base.config import CONFIG
-from cogs.base.guildedcog import ConfigedBot
+from bots.basebot import BaseBot
 from utils import DATABASE_PATH, SCHEMA_PATH
 
 intents = discord.Intents.all()

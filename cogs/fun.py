@@ -67,6 +67,21 @@ class Fun(GuildedCog, name="fun"):
             )
         await message.edit(embed=embed, view=None, content=None)
 
+    @commands.hybrid_command(
+        name="test",
+        description="test",
+    )
+    @checks.not_blacklisted()
+    @checks.is_correct_guild()
+    async def test(self, context: Context) -> None:
+        """
+        test
+
+        :param context: The hybrid command context.
+        """
+        self.logger.info("hey")
+        return
+
 
 async def setup(bot):
     await bot.add_cog(Fun(bot))

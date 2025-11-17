@@ -6,13 +6,10 @@ Description:
 Version: 5.5.0
 """
 
-import json
-import os
 from typing import Callable, TypeVar
 
 from discord.ext import commands
 
-from base.config import CONFIG
 from exceptions import *
 from utils import db_manager
 
@@ -25,7 +22,7 @@ def is_owner() -> Callable[[T], T]:
     """
 
     async def predicate(context: commands.Context) -> bool:
-        if context.author.id != CONFIG.dev_id:
+        if context.author.id != context.cog.bot.config.dev_id:
             raise UserNotOwner
         return True
 
@@ -52,7 +49,7 @@ def is_correct_guild() -> Callable[[T], T]:
     """
 
     async def predicate(context: commands.Context) -> bool:
-        if context.guild.id != CONFIG.server:
+        if context.guild.id != context.cog.bot.config.server:
             raise IncorrectGuild
         return True
 

@@ -10,9 +10,7 @@ import asyncio
 
 import aiosqlite
 import discord
-from discord.ext import commands
 
-from base.config import CONFIG
 from bots.basebot import BaseBot
 from utils import DATABASE_PATH, SCHEMA_PATH
 
@@ -28,8 +26,6 @@ intents.presences = True
 intents.guilds = True
 
 bot = BaseBot(
-    CONFIG,
-    command_prefix=commands.when_mentioned_or(CONFIG.command_prefix),
     intents=intents,
     help_command=None,
 )
@@ -45,4 +41,4 @@ async def init_db():
 asyncio.run(init_db())
 asyncio.run(bot.load_cogs())
 
-bot.run(CONFIG.token)
+bot.run(bot.config.token)

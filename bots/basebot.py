@@ -14,7 +14,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 import exceptions
-from base.config import CONFIG, Config, ConfigedBot
+from bots.configbot import ConfigedBot
 from utils import BASE_PATH
 from utils.logger import BotLogger
 
@@ -31,8 +31,8 @@ intents.guilds = True
 
 
 class BaseBot(ConfigedBot):
-    def __init__(self, config: Config, command_prefix: str, **kwargs):
-        super().__init__(config, command_prefix, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.logger = BotLogger()
 
     async def on_ready(self) -> None:
@@ -51,10 +51,10 @@ class BaseBot(ConfigedBot):
         )
         await self.change_presence(activity=basic_activity)
         # TODO what the heck was this for
-        # if CONFIG.sync_commands_globally:
+        # if self.config.sync_commands_globally:
         self.logger.info("Syncing commands globally...")
-        # self.tree.clear_commands(guild=self.get_guild(CONFIG.server))
-        commands = await self.tree.sync(guild=self.get_guild(CONFIG.server))
+        # self.tree.clear_commands(guild=self.get_guild(self.config.server))
+        commands = await self.tree.sync(guild=self.get_guild(self.config.server))
 
     async def on_message(self, message: discord.Message) -> None:
         """

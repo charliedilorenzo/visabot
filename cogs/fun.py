@@ -12,6 +12,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from bots.basebot import BaseBot
 from cogs.base.guildedcog import GuildedCog
 from utils import checks
 
@@ -35,7 +36,7 @@ class Choice(discord.ui.View):
 
 
 class Fun(GuildedCog, name="fun"):
-    def __init__(self, bot):
+    def __init__(self, bot: BaseBot):
         super().__init__(bot)
 
     @commands.hybrid_command(

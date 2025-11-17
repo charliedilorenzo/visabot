@@ -15,8 +15,8 @@ from discord.ext.commands import Context
 from discord.member import Member
 from discord.message import Message
 
-from base.config import ConfigedBot
 from base.visacog import VisaCog
+from bots.basebot import BaseBot
 from exceptions import VisaKickFailure
 from utils import MEDIA_PATH, checks
 from utils.time_helpers import get_now
@@ -25,7 +25,7 @@ from utils.time_helpers import get_now
 # TODO add last offline to db or somethings
 class Visabot(VisaCog, name="visabot"):
 
-    def __init__(self, bot: ConfigedBot):
+    def __init__(self, bot: BaseBot):
         super().__init__(bot)
 
     # TODO this should perhaps be moved to guildedcog
@@ -41,7 +41,7 @@ class Visabot(VisaCog, name="visabot"):
             description = command.description.partition("\n")[0]
             data.append(f"{prefix}{command.name} - {description}")
             if command.name == "visa":
-                data.append(f"")
+                data.append("")
                 for other_command in command.walk_commands():
                     description = other_command.description.partition("\n")[0]
                     data.append(

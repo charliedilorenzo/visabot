@@ -11,14 +11,14 @@ from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Bot, Context
 
-from base.config import ConfigedBot
+from bots.basebot import BaseBot
 from cogs.base.guildedcog import GuildedCog
 from utils import checks, db_manager
 
 
 class Owner(GuildedCog, name="owner"):
 
-    def __init__(self, bot: ConfigedBot):
+    def __init__(self, bot: BaseBot):
         super().__init__(bot)
 
     @commands.command(

@@ -3,15 +3,16 @@ from typing import Optional
 
 import discord
 from discord import ClientUser, Member
-from discord.ext.commands import Bot
 
+# from discord.ext.commands import Bot
+from bots.basebot import BaseBot
 from cogs.base.guildedcog import GuildedCog
 from exceptions import VisaKickFailure
 
 
 class VisaCog(GuildedCog):
 
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: BaseBot):
         super().__init__(bot)
         if self.bot.config.test_mode == True:
             self.visa_length = datetime.timedelta(minutes=1)

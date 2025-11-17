@@ -16,12 +16,12 @@ from discord import ClientUser, Guild, TextChannel, User
 from discord.ext import commands
 from discord.ext.commands import CommandError, Context
 
-from base.config import ConfigedBot
+from bots.basebot import BaseBot
 from utils import BASE_PATH, LOG_PATH, MEDIA_PATH
 
 
 class GuildedCog(commands.Cog):
-    def __init__(self, bot: ConfigedBot):
+    def __init__(self, bot: BaseBot):
         self.bot = bot
         self.logger = self.bot.logger
         # manually import this just cause not in config i guess

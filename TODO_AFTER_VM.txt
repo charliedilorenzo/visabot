@@ -1,24 +1,11 @@
 
-- move things out of base and make folders for each concept
-  - guildedcog
-  - basebot
-  - config
-  - incorperate visacog.py into visa.py under cog
-
-- helpers become utils
-
 - investigate and this more deeply about which classes should have which functions (cause they be kinda jumbled)
 - check that guild works without fetched guild and is up to date even as a variable of the class
   - probably replace with context otherwise
-- change a bunch of the returns to send some error content
+- change a bunch of the errors to have better descriptions
   - create some function that will generate this
   - figure out if there is a function that will catch errors
 - move stuff that is main out to better places (espeically todos)
-
-- should we be using discord objects to store server id etc?
-  - server_obj = discord.Object(config.server)
-    print(f"{ server_obj  = }")
-  -
 
 - Figure out how to replace that with SQL database
 

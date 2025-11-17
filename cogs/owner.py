@@ -21,6 +21,21 @@ class Owner(GuildedCog, name="owner"):
     def __init__(self, bot: BaseBot):
         super().__init__(bot)
 
+    def help_blurb(self, context: Context) -> str:
+        prefix = self.bot.config.command_prefix
+        # just to make it easier for me to remember there is owner help command
+        if context.author.id == self.bot.config.dev_id:
+            cog = self.bot.get_cog("owner".lower())
+            commands = cog.get_commands()
+            for command in commands:
+                if command.name == "ownerhelp":
+                    data = []
+                    description = command.description.partition("\n")[0]
+                    data.append(f"{prefix}{command.name} - {description}")
+                    help_text = "\n".join(data)
+            return help_text
+        return None
+
     @commands.command(
         name="ownerhelp",
         description="List all commands from the 'Owner' cog.",

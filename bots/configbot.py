@@ -12,7 +12,6 @@ ACCEPTED_KEYS = set(
     [
         "test_mode",
         "spam_channel",
-        "bot_status_channel",
         "dev_id",
         # "test_config",
         # "config"
@@ -25,7 +24,6 @@ class Config:
     token: str
     server: int
     spam_channel: str
-    bot_status_channel: str
     dev_id: Optional[int] = None
     command_prefix: str = "visabot"
     sync_commands_globally: bool = True

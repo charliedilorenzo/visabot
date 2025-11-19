@@ -34,7 +34,7 @@ class Visabot(VisaBase, name="visabot"):
         commands_list = self.get_commands()
         # pretty much manual cause im lazy
         data = []
-        unlisted = ["designate_spam_channel", "designate_status_channel"]
+        unlisted = ["designate_spam_channel"]
         for command in commands_list:
             if command.name in unlisted:
                 continue
@@ -303,12 +303,12 @@ class Visabot(VisaBase, name="visabot"):
         await self.add_visa_after_offline()
         await self.purge_all_overstayed_visa()
         self.purge_visas_background_task.start()
-        await self.bot_status_channel.send("Visabot Online")
+        await self.spam_channel.send("Visabot Online")
         return
 
     @commands.Cog.listener()
     async def on_disconnect(self):
-        await self.bot_status_channel.send("Visabot Offline")
+        await self.spam_channel.send("Visabot Offline")
 
     @tasks.loop(seconds=300)  # task runs every 5 minutes
     async def purge_visas_background_task(self):

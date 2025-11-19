@@ -30,7 +30,6 @@ class GuildedCog(commands.Cog):
         # this is currently defined in the visa bot but we may waant to move some stuff to another place
         self.guild: Optional[Guild] = None
         self.spam_channel: Optional[TextChannel] = None
-        self.bot_status_channel: Optional[TextChannel] = None
 
     def is_correct_guild_check(self, guild: Guild) -> bool:
         if isinstance(guild, Guild):
@@ -103,7 +102,4 @@ class GuildedCog(commands.Cog):
         most_specific_subclass = type(self).mro()[0]
         self.logger.info(f"Starting Cog: {most_specific_subclass.__name__}")
         self.spam_channel = await self.guild.fetch_channel(self.bot.config.spam_channel)
-        self.bot_status_channel = await self.guild.fetch_channel(
-            self.bot.config.bot_status_channel
-        )
         return
